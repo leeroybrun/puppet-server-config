@@ -2,23 +2,7 @@
 #---------------------------------------------------------------------
 # Config
 #---------------------------------------------------------------------
-$reportEmail = 'my-server-reports@gmail.com'
-
-$rootPwd     = 'ROOT_PWD_ENCODED'
-$newUserName = 'myUsername'
-$newUserPwd  = 'USER_PWD_ENCODED'
-
-$sshKeyComment = 'my key'
-$sshKeyType    = 'ssh-rsa'
-$sshKeyContent = 'MY KEY CONTENT'
-$sshPort	   = 7326
-
-# Tripwire
-$twLocalPassphrase = 'VERY_SECRET_PASSPHRASE'
-$twSitePassphrase = 'VERY_SECRET_PASSPHRASE'
-
-$knockdSequenceOpen  = '4000:udp,4697:tcp,3102:udp'
-$knockdSequenceClose = '7634:tcp,3861:udp,4923:tcp
+import config.pp
 
 #---------------------------------------------------------------------
 # apt-get update/upgrade
