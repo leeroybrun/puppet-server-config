@@ -17,6 +17,9 @@ $sshPort	   = 7326
 $twLocalPassphrase = 'VERY_SECRET_PASSPHRASE'
 $twSitePassphrase = 'VERY_SECRET_PASSPHRASE'
 
+$knockdSequenceOpen  = '4000:udp,4697:tcp,3102:udp'
+$knockdSequenceClose = '7634:tcp,3861:udp,4923:tcp
+
 #---------------------------------------------------------------------
 # apt-get update/upgrade
 #---------------------------------------------------------------------
@@ -215,8 +218,8 @@ $twSitePassphrase = 'VERY_SECRET_PASSPHRASE'
 # Install and enable port knocking
 #---------------------------------------------------------------------
 	class { 'knockd':
-	  sequence_open  => '4000:udp,4697:tcp,3102:udp',
-	  sequence_close => '7634:tcp,3861:udp,4923:tcp',
+	  sequence_open  => $knockdSequenceOpen,
+	  sequence_close => $knockdSequenceClose,
 	  port_to_manage => $sshPort,
 	  interface_to_manage => 'eth0',
 	  command_timeout     => '15'
