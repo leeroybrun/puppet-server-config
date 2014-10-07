@@ -102,17 +102,19 @@ apt-get install build-essential ruby-dev git puppet
 
 gem install librarian-puppet
 
-mkdir /tmp/putty-conf
-cd /tmp/putty-conf
-git clone https://github.com/leeroybrun/puppet-server-config.git --depth 1 --bare
-
 mkdir /etc/puppet
 cd /etc/puppet
 
-git --work-tree=/etc/puppet checkout HEAD -- puppet
+mkdir /tmp/puppet-conf
+cd /tmp/puppet-conf
+wget https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz
+tar -zxvf puppet.tar.gz --strip-components=1
+cp -r puppet/ /etc/puppet
 
-rm -rf /tmp/putty-conf
+rm -rf /tmp/puppet-conf
 
 librarian-puppet install
+
+# Replace values in config.pp with variables content
 
 puppet apply manifests/site.pp
