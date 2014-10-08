@@ -16,6 +16,9 @@
 #<UDF name="KNOCKD_SEQ_CLOSE" Label="Knockd sequence close" default="" />
 #
 
+exec >> /root/deploy.log
+exec 2>&1
+
 genpasswd() {
 	local l=$1
    	[ "$l" == "" ] && l=16
