@@ -17,8 +17,12 @@ wget -q https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master
 
 ## TODO
 
+- Better report
+    - Better spaces
+    - Show "OK" for each sections
+    - Disable gem install output
+    - Print summary of all parameters
 - Encrypt report before sending by email
-- Print summary of all parameters in report
 - Check psad Puppet module for iptables/ip6tables default logging rule (http://www.cipherdyne.org/psad/docs/fwconfig.html)
 - Verify puppet modules & improve them if necessary 
 
