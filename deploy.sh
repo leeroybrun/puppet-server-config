@@ -167,7 +167,7 @@ mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
 wget https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz
 tar -zxvf puppet.tar.gz --strip-components=1
-cp -r puppet/ /etc/puppet
+cp -r puppet/* /etc/puppet
 
 cd /etc/puppet
 

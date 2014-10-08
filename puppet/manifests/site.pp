@@ -34,10 +34,10 @@ import config.pp
 # Add SSH key
 #---------------------------------------------------------------------
 	ssh_authorized_key { $sshKeyComment:
-	user => $newUserName,
-	type => $sshKeyType,
-	key  => $sshKeyContent,
-}
+		user => $newUserName,
+		type => $sshKeyType,
+		key  => $sshKeyContent,
+	}
 
 #---------------------------------------------------------------------
 # Add new user to sudoers
