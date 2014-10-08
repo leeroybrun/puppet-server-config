@@ -1,20 +1,20 @@
-First, install dependencies with http://librarian-puppet.com/
+# Simple server config
+
+Simple basic config for a fresh Ubuntu server.
+
+## Deploy
+
+
+### Deploy to Linode
+
+You can use the Stackscript for deploying to Linode.
+
+### Deploy everywhere
 
 ```
-sudo apt-get update
-sudo apt-get upgrade
-
-sudo apt-get install build-essential
-sudo apt-get install ruby-dev
-
-sudo apt-get install git
-sudo apt-get install puppet
-
-gem install librarian-puppet
-
-cd /etc/puppet
-
-librarian-puppet install
-
-puppet apply manifests/site.pp
+wget https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master/deploy.sh && chmod +x deploy.sh && ./deploy.sh
 ```
+
+## Licence
+
+MIT
