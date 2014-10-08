@@ -77,6 +77,8 @@ fi
 if [ "$SSH_KEY_CONTENT" == '' ]; then
 	echo "\n------------------------------------------------------"
 	echo "- No SSH key provided, generating..."
+	rm -f /tmp/generatedKey
+	rm -f /tmp/generatedKey.pub
 	ssh-keygen -t rsa -N "" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
 	TMP_PUB_KEY=$(cat /tmp/generatedKey.pub)
 	splitSSHkey "$TMP_PUB_KEY"
@@ -136,7 +138,7 @@ echo "\n------------------------------------------------------"
 echo "- Installing needed packages for deployment..."
 echo "------------------------------------------------------\n"
 apt-get update
-apt-get upgrade
+apt-get upgrade -y
 apt-get install -y build-essential ruby-dev git puppet makepasswd
 gem install librarian-puppet
 
