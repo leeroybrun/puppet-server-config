@@ -33,9 +33,11 @@ splitSSHkey() {
 	SSH_KEY_COMMENT="${BASH_REMATCH[3]}"
 }
 
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Welcome ! - $(date)"
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 
 #---------------------------------------------------------------------
 # No linode ID defined, probably called from shell
@@ -44,7 +46,8 @@ if [ "$LINODE_ID" == '' ]; then
 	echo "- We will ask you for some informations to setup your new box."
 	echo "- If the following values are not provided, they will be randomly generated :"
 	echo "-     root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email:" -i "root@localhost" REPORT_EMAIL
 	read -e -p "Enter root password:" -i "" ROOT_PWD
@@ -56,20 +59,24 @@ if [ "$LINODE_ID" == '' ]; then
 	read -e -p "Enter a Tripwire site passphrase:" -i "22" TW_SITE_PASSPHRASE
 	read -e -p "Enter a Knockd sequence open:" -i "" KNOCKD_SEQ_OPEN
 	read -e -p "Enter a Knockd sequence close:" -i "" KNOCKD_SEQ_CLOSE
+	echo "------------------------------------------------------"
+	echo ""
 fi
 
 #---------------------------------------------------------------------
 # Generate values for parameters not defined
 #---------------------------------------------------------------------
 if [ "$ROOT_PWD" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No root password provided, generating..."
 	ROOT_PWD=$(genpasswd 50)
 	echo "- Root password : $ROOT_PWD"
 fi
 
 if [ "$USER_PWD" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No user password provided, generating..."
 	USER_PWD=$(genpasswd 50)
 	echo "- User password : $USER_PWD"
@@ -80,7 +87,8 @@ if [ "$TMP_PUB_KEY" != '' ]; then
 fi
 
 if [ "$SSH_KEY_CONTENT" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No SSH key provided, generating..."
 	rm -f /tmp/generatedKey
 	rm -f /tmp/generatedKey.pub
@@ -89,86 +97,106 @@ if [ "$SSH_KEY_CONTENT" == '' ]; then
 	splitSSHkey "$TMP_PUB_KEY"
 	echo "------------------------------------------------------"
 	echo "- Public key :"
-	echo "------------------------------------------------------\n"
+	echo "------------------------------------------------------"
+	echo ""
 	cat /tmp/generatedKey.pub
 	echo "------------------------------------------------------"
 	echo "- Private key :"
-	echo "------------------------------------------------------\n"
+	echo "------------------------------------------------------"
+	echo ""
 	cat /tmp/generatedKey
+	
+	rm -f /tmp/generatedKey.pub
+	rm -f /tmp/generatedKey
 fi
 
 if [ "$SSH_PORT" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No SSH port provided, generating..."
 	SSH_PORT="$(shuf -i 2000-9999 -n 1)"
 	echo "- SSH port : $SSH_PORT"
 fi
 
 if [ "$TW_LOCAL_PASSPHRASE" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No Tripwire local passphrase provided, generating..."
 	TW_LOCAL_PASSPHRASE=$(genpasswd 50)
 	echo "- Tripwire local passphrase : $TW_LOCAL_PASSPHRASE"
 fi
 
 if [ "$TW_SITE_PASSPHRASE" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No Tripwire site passphrase provided, generating..."
 	TW_SITE_PASSPHRASE=$(genpasswd 50)
 	echo "- Tripwire site passphrase : $TW_SITE_PASSPHRASE"
 fi
 
 if [ "$KNOCKD_SEQ_OPEN" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No Knockd sequence open provided, generating..."
 	KNOCKD_SEQ_OPEN="$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp"
 	echo "- Knockd sequence open : $KNOCKD_SEQ_OPEN"
 fi
 
 if [ "$KNOCKD_SEQ_CLOSE" == '' ]; then
-	echo "\n------------------------------------------------------"
+	echo ""
+	echo "------------------------------------------------------"
 	echo "- No Knockd sequence close provided, generating..."
 	KNOCKD_SEQ_CLOSE="$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp"
 	echo "- Knockd sequence close : $KNOCKD_SEQ_CLOSE"
 fi
 
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- All config values entered/generated, starting..."
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 
 #---------------------------------------------------------------------
 # Install needed packages for deployment
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Installing needed packages for deployment..."
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 apt-get update -q > /root/deploy-details.log
 apt-get upgrade -q -y > /dev/null
 apt-get install -q -y build-essential ruby-dev git puppet makepasswd > /root/deploy-details.log
-gem install librarian-puppet > /root/deploy-details.log
+gem install librarian-puppet > /root/deploy-details.log 2>&1
 
 #---------------------------------------------------------------------
 # Hash passwords
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Hashing passwords..."
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 ROOT_PWD_HASHED=$(mkpasswd -m sha-512 $ROOT_PWD | tr -d '\n')
 USER_PWD_HASHED=$(mkpasswd -m sha-512 $USER_PWD | tr -d '\n')
 
 #---------------------------------------------------------------------
 # Get Puppet manifests from Github
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Download Puppet manifests from Github..."
-echo "------------------------------------------------------\n"
-mkdir /etc/puppet
+echo "------------------------------------------------------"
+echo ""
+if [ ! -d "/etc/puppet" ]; then
+	mkdir /etc/puppet
+fi
 cd /etc/puppet
 
 mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
-wget https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz > /root/deploy-details.log
-tar -zxvf puppet.tar.gz --strip-components=1 > /root/deploy-details.log
+wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz > /root/deploy-details.log
+tar -zxf puppet.tar.gz --strip-components=1 > /root/deploy-details.log
 cp -r puppet/* /etc/puppet
 
 cd /etc/puppet
@@ -178,17 +206,21 @@ rm -rf /tmp/puppet-conf
 #---------------------------------------------------------------------
 # Install Puppet modules dependencies
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Install Puppet modules dependencies..."
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 librarian-puppet install
 
 #---------------------------------------------------------------------
 # Replace values in config.pp with variables content
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Replace values in Puppet config manifest..."
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/ROOT_PWD_HASHED/$(echo $ROOT_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
@@ -205,24 +237,42 @@ sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g'
 #---------------------------------------------------------------------
 # Here we go !
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Applying Puppet manifest..."
-echo "------------------------------------------------------\n"
-puppet apply manifests/site.pp
+echo "------------------------------------------------------"
+echo ""
+puppet apply manifests/site.pp > /root/deploy-details.log
 
 #---------------------------------------------------------------------
 # Sending report to email provided
 #---------------------------------------------------------------------
-echo "\n------------------------------------------------------"
+echo ""
+echo "------------------------------------------------------"
 echo "- Sending report to $REPORT_EMAIL..."
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 # TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
+# TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
 cat /root/deploy.log | mail -s "Deploying report for $HOSTNAME" "$REPORT_EMAIL"
 
-echo "\n------------------------------------------------------"
+#---------------------------------------------------------------------
+# Removing report from filesystem
+#---------------------------------------------------------------------
+echo ""
+echo "------------------------------------------------------"
+echo "- Removing report from filesystem"
+echo "------------------------------------------------------"
+echo ""
+rm -f /root/deploy.log
+rm -f /root/deploy-details.log
+
+echo ""
+echo "------------------------------------------------------"
 echo "- All done !"
-echo "------------------------------------------------------\n"
+echo "------------------------------------------------------"
+echo ""
 
 #---------------------------------------------------------------------
 # Reboot to be sure all changes are applied
