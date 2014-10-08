@@ -12,7 +12,7 @@ You can use the Stackscript for deploying to Linode.
 ### Deploy everywhere
 
 ```
-wget https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master/deploy.sh && chmod +x deploy.sh && ./deploy.sh
+wget -q https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master/deploy.sh && chmod +x deploy.sh && ./deploy.sh
 ```
 
 ## Licence
