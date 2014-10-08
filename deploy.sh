@@ -210,6 +210,21 @@ echo "- Applying Puppet manifest..."
 echo "------------------------------------------------------\n"
 puppet apply manifests/site.pp
 
+#---------------------------------------------------------------------
+# Sending report to email provided
+#---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Sending report to $REPORT_EMAIL..."
+echo "------------------------------------------------------\n"
+# TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
+# http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
+cat /root/deploy.log | mail -s "Deploying report for $HOSTNAME" "$REPORT_EMAIL"
+
 echo "\n------------------------------------------------------"
 echo "- All done !"
 echo "------------------------------------------------------\n"
+
+#---------------------------------------------------------------------
+# Reboot to be sure all changes are applied
+#---------------------------------------------------------------------
+reboot
