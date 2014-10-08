@@ -3,9 +3,9 @@
 #---------------------------------------------------------------------
 $reportEmail 		 = 'REPORT_EMAIL'			# Ex: email@domain.com
 
-$rootPwd     		 = 'ROOT_PWD_ENCODED'
+$rootPwd     		 = 'ROOT_PWD_HASHED'
 $newUserName 		 = 'USER_NAME'				# Ex: myUserName
-$newUserPwd  		 = 'USER_PWD_ENCODED'
+$newUserPwd  		 = 'USER_PWD_HASHED'
 
 $sshKeyComment 		 = 'SSH_KEY_COMMENT'		# Ex: nick@magpie.puppetlabs.lan
 $sshKeyType    		 = 'SSH_KEY_TYPE'			# Ex: ssh-rsa

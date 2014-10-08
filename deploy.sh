@@ -165,9 +165,9 @@ librarian-puppet install
 # Replace values in config.pp with variables content
 #---------------------------------------------------------------------
 sed -i.bak 's/REPORT_EMAIL/"${REPORT_EMAIL}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/ROOT_PWD/"${ROOT_PWD}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/ROOT_PWD_HASHED/"${ROOT_PWD_HASHED}"/g' /etc/puppet/manifests/config.pp
 sed -i.bak 's/USER_NAME/"${USER_NAME}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/USER_PWD/"${USER_PWD}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/USER_PWD_HASHED/"${USER_PWD_HASHED}"/g' /etc/puppet/manifests/config.pp
 sed -i.bak 's/SSH_KEY_COMMENT/"${SSH_KEY_COMMENT}"/g' /etc/puppet/manifests/config.pp
 sed -i.bak 's/SSH_KEY_TYPE/"${SSH_KEY_TYPE}"/g' /etc/puppet/manifests/config.pp
 sed -i.bak 's/SSH_KEY_CONTENT/"${SSH_KEY_CONTENT}"/g' /etc/puppet/manifests/config.pp
