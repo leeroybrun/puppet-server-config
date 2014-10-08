@@ -34,12 +34,12 @@ splitSSHkey() {
 # No linode ID defined, probably called from shell
 #---------------------------------------------------------------------
 if [ "$LINODE_ID" == '' ]; then
-	echo "\n---------------------------"
+	echo "\n------------------------------------------------------"
 	echo "- Welcome !"
-	echo "- We will ask you for some informations to setup your new Linux box."
+	echo "- We will ask you for some informations to setup your new box."
 	echo "- If the following values are not provided, they will be randomly generated :"
 	echo "-     root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
-	echo "\n---------------------------"
+	echo "\n------------------------------------------------------"
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email:" -i "root@localhost" REPORT_EMAIL
 	read -e -p "Enter root password:" -i "" ROOT_PWD
@@ -51,24 +51,23 @@ if [ "$LINODE_ID" == '' ]; then
 	read -e -p "Enter a Tripwire site passphrase:" -i "22" TW_SITE_PASSPHRASE
 	read -e -p "Enter a Knockd sequence open:" -i "" KNOCKD_SEQ_OPEN
 	read -e -p "Enter a Knockd sequence close:" -i "" KNOCKD_SEQ_CLOSE
-
 fi
 
 #---------------------------------------------------------------------
 # Generate values for parameters not defined
 #---------------------------------------------------------------------
 if [ "$ROOT_PWD" == '' ]; then
-	echo "\n---------------------------"
-	echo "No root password provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No root password provided, generating..."
 	ROOT_PWD=$(genpasswd 50)
-	echo "Root password : $ROOT_PWD"
+	echo "- Root password : $ROOT_PWD"
 fi
 
 if [ "$USER_PWD" == '' ]; then
-	echo "\n---------------------------"
-	echo "No user password provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No user password provided, generating..."
 	USER_PWD=$(genpasswd 50)
-	echo "User password : $USER_PWD"
+	echo "- User password : $USER_PWD"
 fi
 
 if [ "$TMP_PUB_KEY" != '' ]; then
@@ -76,73 +75,86 @@ if [ "$TMP_PUB_KEY" != '' ]; then
 fi
 
 if [ "$SSH_KEY_CONTENT" == '' ]; then
-	echo "\n---------------------------"
-	echo "No SSH key provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No SSH key provided, generating..."
 	ssh-keygen -t rsa -N "" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
 	TMP_PUB_KEY=$(cat /tmp/generatedKey.pub)
 	splitSSHkey "$TMP_PUB_KEY"
-	echo "---------------------------"
+	echo "------------------------------------------------------"
 	echo "- Public key :"
-	echo "---------------------------\n"
+	echo "------------------------------------------------------\n"
 	cat /tmp/generatedKey.pub
-	echo "---------------------------"
+	echo "------------------------------------------------------"
 	echo "- Private key :"
-	echo "---------------------------\n"
+	echo "------------------------------------------------------\n"
 	cat /tmp/generatedKey
 fi
 
 if [ "$SSH_PORT" == '' ]; then
-	echo "\n---------------------------"
-	echo "No SSH port provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No SSH port provided, generating..."
 	SSH_PORT="$(shuf -i 2000-9999 -n 1)"
-	echo "SSH port : $SSH_PORT"
+	echo "- SSH port : $SSH_PORT"
 fi
 
 if [ "$TW_LOCAL_PASSPHRASE" == '' ]; then
-	echo "\n---------------------------"
-	echo "No Tripwire local passphrase provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No Tripwire local passphrase provided, generating..."
 	TW_LOCAL_PASSPHRASE=$(genpasswd 50)
-	echo "Tripwire local passphrase : $TW_LOCAL_PASSPHRASE"
+	echo "- Tripwire local passphrase : $TW_LOCAL_PASSPHRASE"
 fi
 
 if [ "$TW_SITE_PASSPHRASE" == '' ]; then
-	echo "\n---------------------------"
-	echo "No Tripwire site passphrase provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No Tripwire site passphrase provided, generating..."
 	TW_SITE_PASSPHRASE=$(genpasswd 50)
-	echo "Tripwire site passphrase : $TW_SITE_PASSPHRASE"
+	echo "- Tripwire site passphrase : $TW_SITE_PASSPHRASE"
 fi
 
 if [ "$KNOCKD_SEQ_OPEN" == '' ]; then
-	echo "\n---------------------------"
-	echo "No Knockd sequence open provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No Knockd sequence open provided, generating..."
 	KNOCKD_SEQ_OPEN="$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp"
-	echo "Knockd sequence open : $KNOCKD_SEQ_OPEN"
+	echo "- Knockd sequence open : $KNOCKD_SEQ_OPEN"
 fi
 
 if [ "$KNOCKD_SEQ_CLOSE" == '' ]; then
-	echo "\n---------------------------"
-	echo "No Knockd sequence close provided, generating..."
+	echo "\n------------------------------------------------------"
+	echo "- No Knockd sequence close provided, generating..."
 	KNOCKD_SEQ_CLOSE="$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp"
-	echo "Knockd sequence close : $KNOCKD_SEQ_CLOSE"
+	echo "- Knockd sequence close : $KNOCKD_SEQ_CLOSE"
 fi
+
+echo "\n------------------------------------------------------"
+echo "- All config values entered/generated, starting..."
+echo "------------------------------------------------------\n"
 
 #---------------------------------------------------------------------
 # Install needed packages for deployment
 #---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Installing needed packages for deployment..."
+echo "------------------------------------------------------\n"
 apt-get update
 apt-get upgrade
-apt-get install build-essential ruby-dev git puppet makepasswd
+apt-get install -y build-essential ruby-dev git puppet makepasswd
 gem install librarian-puppet
 
 #---------------------------------------------------------------------
 # Hash passwords
 #---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Hashing passwords..."
+echo "------------------------------------------------------\n"
 ROOT_PWD_HASHED=$(mkpasswd -m sha-512 $ROOT_PWD | tr -d '\n')
 USER_PWD_HASHED=$(mkpasswd -m sha-512 $USER_PWD | tr -d '\n')
 
 #---------------------------------------------------------------------
 # Get Puppet manifests from Github
 #---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Download Puppet manifests from Github..."
+echo "------------------------------------------------------\n"
 mkdir /etc/puppet
 cd /etc/puppet
 
@@ -159,11 +171,17 @@ rm -rf /tmp/puppet-conf
 #---------------------------------------------------------------------
 # Install Puppet modules dependencies
 #---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Install Puppet modules dependencies..."
+echo "------------------------------------------------------\n"
 librarian-puppet install
 
 #---------------------------------------------------------------------
 # Replace values in config.pp with variables content
 #---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Replace values in Puppet config manifest..."
+echo "------------------------------------------------------\n"
 sed -i.bak 's/REPORT_EMAIL/"${REPORT_EMAIL}"/g' /etc/puppet/manifests/config.pp
 sed -i.bak 's/ROOT_PWD_HASHED/"${ROOT_PWD_HASHED}"/g' /etc/puppet/manifests/config.pp
 sed -i.bak 's/USER_NAME/"${USER_NAME}"/g' /etc/puppet/manifests/config.pp
@@ -180,4 +198,11 @@ sed -i.bak 's/KNOCKD_SEQ_CLOSE/"${KNOCKD_SEQ_CLOSE}"/g' /etc/puppet/manifests/co
 #---------------------------------------------------------------------
 # Here we go !
 #---------------------------------------------------------------------
+echo "\n------------------------------------------------------"
+echo "- Applying Puppet manifest..."
+echo "------------------------------------------------------\n"
 puppet apply manifests/site.pp
+
+echo "\n------------------------------------------------------"
+echo "- All done !"
+echo "------------------------------------------------------\n"
