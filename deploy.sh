@@ -9,7 +9,7 @@
 #<UDF name="SSH_KEY_COMMENT" Label="SSH key comment" default="" />
 #<UDF name="SSH_KEY_TYPE" Label="SSH key type" default="ssh-rsa" />
 #<UDF name="SSH_KEY_CONTENT" Label="SSH key content" default="" />
-#<UDF name="SSH_PORT" Label="SSH port" default="22" />
+#<UDF name="SSH_PORT" Label="SSH port" default="" />
 #<UDF name="TW_LOCAL_PASSPHRASE" Label="Tripwire local passphrase" default="" />
 #<UDF name="TW_SITE_PASSPHRASE" Label="Tripwire site passphrase" default="" />
 #<UDF name="KNOCKD_SEQ_OPEN" Label="Knockd sequence open" default="" />
@@ -22,14 +22,41 @@ genpasswd() {
   	tr -dc A-Za-z0-9_ < /dev/urandom | head -c ${l} | xargs
 }
 
-# No linode ID defined, probably called from shell
-if [ "$LINODE_ID" == '' ]; then
-	# We should ask the user to manually enter values
+splitSSHkey() {
+	local key=$1
+   	[[ $key =~ ^([^ ]+)\ ([^ ]+)\ (.*)$ ]]
+	SSH_KEY_TYPE="${BASH_REMATCH[1]}"
+	SSH_KEY_CONTENT="${BASH_REMATCH[2]}"
+	SSH_KEY_COMMENT="${BASH_REMATCH[3]}"
+}
 
+#---------------------------------------------------------------------
+# No linode ID defined, probably called from shell
+#---------------------------------------------------------------------
+if [ "$LINODE_ID" == '' ]; then
+	echo "\n---------------------------"
+	echo "- Welcome !"
+	echo "- We will ask you for some informations to setup your new Linux box."
+	echo "- If the following values are not provided, they will be randomly generated :"
+	echo "-     root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
+	echo "\n---------------------------"
+	# We should ask the user to manually enter values
+	read -e -p "Enter a report email:" -i "root@localhost" REPORT_EMAIL
+	read -e -p "Enter root password:" -i "" ROOT_PWD
+	read -e -p "Enter new (non-root) user name:" -i "myUser" USER_NAME
+	read -e -p "Enter new (non-root) user password:" -i "" USER_PWD
+	read -e -p "Enter an SSH public key:" -i "" TMP_PUB_KEY
+	read -e -p "Enter an SSH port:" -i "22" SSH_PORT
+	read -e -p "Enter a Tripwire local passphrase:" -i "22" TW_LOCAL_PASSPHRASE
+	read -e -p "Enter a Tripwire site passphrase:" -i "22" TW_SITE_PASSPHRASE
+	read -e -p "Enter a Knockd sequence open:" -i "" KNOCKD_SEQ_OPEN
+	read -e -p "Enter a Knockd sequence close:" -i "" KNOCKD_SEQ_CLOSE
 
 fi
 
+#---------------------------------------------------------------------
 # Generate values for parameters not defined
+#---------------------------------------------------------------------
 if [ "$ROOT_PWD" == '' ]; then
 	echo "\n---------------------------"
 	echo "No root password provided, generating..."
@@ -44,15 +71,16 @@ if [ "$USER_PWD" == '' ]; then
 	echo "User password : $USER_PWD"
 fi
 
+if [ "$TMP_PUB_KEY" != '' ]; then
+	splitSSHkey "$TMP_PUB_KEY"
+fi
+
 if [ "$SSH_KEY_CONTENT" == '' ]; then
 	echo "\n---------------------------"
 	echo "No SSH key provided, generating..."
 	ssh-keygen -t rsa -N "" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
 	TMP_PUB_KEY=$(cat /tmp/generatedKey.pub)
-	[[ $TMP_PUB_KEY =~ ^([^ ]+)\ ([^ ]+)\ (.*)$ ]]
-	SSH_KEY_TYPE="${BASH_REMATCH[1]}"
-	SSH_KEY_CONTENT="${BASH_REMATCH[2]}"
-	SSH_KEY_COMMENT="${BASH_REMATCH[3]}"
+	splitSSHkey "$TMP_PUB_KEY"
 	echo "---------------------------"
 	echo "- Public key :"
 	echo "---------------------------\n"
@@ -61,6 +89,13 @@ if [ "$SSH_KEY_CONTENT" == '' ]; then
 	echo "- Private key :"
 	echo "---------------------------\n"
 	cat /tmp/generatedKey
+fi
+
+if [ "$SSH_PORT" == '' ]; then
+	echo "\n---------------------------"
+	echo "No SSH port provided, generating..."
+	SSH_PORT="$(shuf -i 2000-9999 -n 1)"
+	echo "SSH port : $SSH_PORT"
 fi
 
 if [ "$TW_LOCAL_PASSPHRASE" == '' ]; then
@@ -91,17 +126,23 @@ if [ "$KNOCKD_SEQ_CLOSE" == '' ]; then
 	echo "Knockd sequence close : $KNOCKD_SEQ_CLOSE"
 fi
 
-# Hash passwords
-ROOT_PWD_HASHED=""
-USER_PWD_HASHED=""
-     
+#---------------------------------------------------------------------
+# Install needed packages for deployment
+#---------------------------------------------------------------------
 apt-get update
 apt-get upgrade
-
-apt-get install build-essential ruby-dev git puppet
-
+apt-get install build-essential ruby-dev git puppet makepasswd
 gem install librarian-puppet
 
+#---------------------------------------------------------------------
+# Hash passwords
+#---------------------------------------------------------------------
+ROOT_PWD_HASHED=$(mkpasswd -m sha-512 $ROOT_PWD | tr -d '\n')
+USER_PWD_HASHED=$(mkpasswd -m sha-512 $USER_PWD | tr -d '\n')
+
+#---------------------------------------------------------------------
+# Get Puppet manifests from Github
+#---------------------------------------------------------------------
 mkdir /etc/puppet
 cd /etc/puppet
 
@@ -111,10 +152,32 @@ wget https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet
 tar -zxvf puppet.tar.gz --strip-components=1
 cp -r puppet/ /etc/puppet
 
+cd /etc/puppet
+
 rm -rf /tmp/puppet-conf
 
+#---------------------------------------------------------------------
+# Install Puppet modules dependencies
+#---------------------------------------------------------------------
 librarian-puppet install
 
+#---------------------------------------------------------------------
 # Replace values in config.pp with variables content
+#---------------------------------------------------------------------
+sed -i.bak 's/REPORT_EMAIL/"${REPORT_EMAIL}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/ROOT_PWD/"${ROOT_PWD}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/USER_NAME/"${USER_NAME}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/USER_PWD/"${USER_PWD}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/SSH_KEY_COMMENT/"${SSH_KEY_COMMENT}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/SSH_KEY_TYPE/"${SSH_KEY_TYPE}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/SSH_KEY_CONTENT/"${SSH_KEY_CONTENT}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/SSH_PORT/"${SSH_PORT}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/TW_LOCAL_PASSPHRASE/"${TW_LOCAL_PASSPHRASE}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/TW_SITE_PASSPHRASE/"${TW_SITE_PASSPHRASE}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/KNOCKD_SEQ_OPEN/"${KNOCKD_SEQ_OPEN}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak 's/KNOCKD_SEQ_CLOSE/"${KNOCKD_SEQ_CLOSE}"/g' /etc/puppet/manifests/config.pp
 
+#---------------------------------------------------------------------
+# Here we go !
+#---------------------------------------------------------------------
 puppet apply manifests/site.pp
