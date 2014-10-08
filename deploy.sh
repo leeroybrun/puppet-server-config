@@ -16,7 +16,7 @@
 #<UDF name="KNOCKD_SEQ_CLOSE" Label="Knockd sequence close" default="" />
 #
 
-exec >> /root/deploy.log
+exec > >(tee /root/deploy.log)
 exec 2>&1
 
 genpasswd() {
@@ -33,12 +33,14 @@ splitSSHkey() {
 	SSH_KEY_COMMENT="${BASH_REMATCH[3]}"
 }
 
+echo "\n------------------------------------------------------"
+echo "- Welcome ! - $(date)"
+echo "------------------------------------------------------\n"
+
 #---------------------------------------------------------------------
 # No linode ID defined, probably called from shell
 #---------------------------------------------------------------------
 if [ "$LINODE_ID" == '' ]; then
-	echo "\n------------------------------------------------------"
-	echo "- Welcome !"
 	echo "- We will ask you for some informations to setup your new box."
 	echo "- If the following values are not provided, they will be randomly generated :"
 	echo "-     root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
@@ -140,10 +142,10 @@ echo "------------------------------------------------------\n"
 echo "\n------------------------------------------------------"
 echo "- Installing needed packages for deployment..."
 echo "------------------------------------------------------\n"
-apt-get update -q > /dev/null
+apt-get update -q > /root/deploy-details.log
 apt-get upgrade -q -y > /dev/null
-apt-get install -q -y build-essential ruby-dev git puppet makepasswd > /dev/null
-gem install librarian-puppet
+apt-get install -q -y build-essential ruby-dev git puppet makepasswd > /root/deploy-details.log
+gem install librarian-puppet > /root/deploy-details.log
 
 #---------------------------------------------------------------------
 # Hash passwords
@@ -165,8 +167,8 @@ cd /etc/puppet
 
 mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
-wget https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz
-tar -zxvf puppet.tar.gz --strip-components=1
+wget https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz > /root/deploy-details.log
+tar -zxvf puppet.tar.gz --strip-components=1 > /root/deploy-details.log
 cp -r puppet/* /etc/puppet
 
 cd /etc/puppet
@@ -187,18 +189,18 @@ librarian-puppet install
 echo "\n------------------------------------------------------"
 echo "- Replace values in Puppet config manifest..."
 echo "------------------------------------------------------\n"
-sed -i.bak 's/REPORT_EMAIL/"${REPORT_EMAIL}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/ROOT_PWD_HASHED/"${ROOT_PWD_HASHED}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/USER_NAME/"${USER_NAME}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/USER_PWD_HASHED/"${USER_PWD_HASHED}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/SSH_KEY_COMMENT/"${SSH_KEY_COMMENT}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/SSH_KEY_TYPE/"${SSH_KEY_TYPE}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/SSH_KEY_CONTENT/"${SSH_KEY_CONTENT}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/SSH_PORT/"${SSH_PORT}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/TW_LOCAL_PASSPHRASE/"${TW_LOCAL_PASSPHRASE}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/TW_SITE_PASSPHRASE/"${TW_SITE_PASSPHRASE}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/KNOCKD_SEQ_OPEN/"${KNOCKD_SEQ_OPEN}"/g' /etc/puppet/manifests/config.pp
-sed -i.bak 's/KNOCKD_SEQ_CLOSE/"${KNOCKD_SEQ_CLOSE}"/g' /etc/puppet/manifests/config.pp
+sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/ROOT_PWD_HASHED/$(echo $ROOT_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/USER_PWD_HASHED/$(echo $USER_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_KEY_COMMENT/$(echo $SSH_KEY_COMMENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_KEY_TYPE/$(echo $SSH_KEY_TYPE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_KEY_CONTENT/$(echo $SSH_KEY_CONTENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_PORT/$(echo $SSH_PORT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/TW_LOCAL_PASSPHRASE/$(echo $TW_LOCAL_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/TW_SITE_PASSPHRASE/$(echo $TW_SITE_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/KNOCKD_SEQ_OPEN/$(echo $KNOCKD_SEQ_OPEN | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 
 #---------------------------------------------------------------------
 # Here we go !
