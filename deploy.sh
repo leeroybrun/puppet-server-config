@@ -137,9 +137,9 @@ echo "------------------------------------------------------\n"
 echo "\n------------------------------------------------------"
 echo "- Installing needed packages for deployment..."
 echo "------------------------------------------------------\n"
-apt-get update
-apt-get upgrade -y
-apt-get install -y build-essential ruby-dev git puppet makepasswd
+apt-get update -q
+apt-get upgrade -q -y
+apt-get install -q -y build-essential ruby-dev git puppet makepasswd
 gem install librarian-puppet
 
 #---------------------------------------------------------------------
