@@ -83,13 +83,16 @@ if [ "$LINODE_ID" == '' ]; then
 	
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
-	read -e -p "Enter root password: " -i "" ROOT_PWD
+	read -e -s -p "Enter root password: " -i "" ROOT_PWD
 	read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
-	read -e -p "Enter new (non-root) user password: " -i "" USER_PWD
+	read -e -s -p "Enter new (non-root) user password: " -i "" USER_PWD
 	read -e -p "Enter an SSH public key: " -i "" TMP_PUB_KEY
+	if [ "$TMP_PUB_KEY" == "" ]; then
+		read -e -s -p "Enter an SSH key passphrase: " -i "" SSH_KEY_PASSPHRASE
+	fi
 	read -e -p "Enter an SSH port: " -i "22" SSH_PORT
-	read -e -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
-	read -e -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
+	read -e -s -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
+	read -e -s -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
 	read -e -p "Enter a Knockd sequence open: " -i "" KNOCKD_SEQ_OPEN
 	read -e -p "Enter a Knockd sequence close: " -i "" KNOCKD_SEQ_CLOSE
 	
@@ -120,7 +123,7 @@ if [ "$SSH_KEY_CONTENT" == '' ]; then
 	printTextLeft "No SSH key provided, generating..."
 	rm -f /tmp/generatedKey
 	rm -f /tmp/generatedKey.pub
-	ssh-keygen -t rsa -N "" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
+	ssh-keygen -q -t rsa -N "$SSH_KEY_PASSPHRASE" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
 	TMP_PUB_KEY=$(cat /tmp/generatedKey.pub)
 	splitSSHkey "$TMP_PUB_KEY"
 fi
