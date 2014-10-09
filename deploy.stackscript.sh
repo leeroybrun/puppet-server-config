@@ -10,6 +10,7 @@
 #<UDF name="SSH_KEY_COMMENT" Label="SSH key comment" default="" />
 #<UDF name="SSH_KEY_TYPE" Label="SSH key type" default="ssh-rsa" />
 #<UDF name="SSH_KEY_CONTENT" Label="SSH key content" default="" />
+#<UDF name="SSH_KEY_PASSPHRASE" Label="SSH key passphrase (leave empty if you filled the fields below)" default="" />
 #<UDF name="SSH_PORT" Label="SSH port" default="" />
 #<UDF name="TW_LOCAL_PASSPHRASE" Label="Tripwire local passphrase" default="" />
 #<UDF name="TW_SITE_PASSPHRASE" Label="Tripwire site passphrase" default="" />
