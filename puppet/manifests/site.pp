@@ -111,22 +111,17 @@ import 'config.pp'
 #---------------------------------------------------------------------
 	include exim4
 	exim4::config { 'exim4-default':
-		configtype = 'internet',
-	    local_interfaces = '127.0.0.1; ::1',
-	    readhost = '',
-	    relay_domains = '',
-	    minimaldns = 'false',
-	    relay_nets = '',
-	    smarthost = '',
-	    use_split_config = 'false',
-	    hide_mailname = '',
-	    mailname_in_oh = 'true',
-	    localdelivery = 'maildir_home'
-	}
-
-	package { "mutt":
-	    ensure  => "latest",
-	    require => Class["exim4"]
+	    configtype => 'internet',
+	    local_interfaces => '127.0.0.1; ::1',
+	    readhost => '',
+	    relay_domains => '',
+	    minimaldns => 'false',
+	    relay_nets => '',
+	    smarthost => '',
+	    use_split_config => 'false',
+	    hide_mailname => '',
+	    mailname_in_oh => 'true',
+	    localdelivery => 'maildir_home'
 	}
 
 
