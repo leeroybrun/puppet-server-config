@@ -84,30 +84,19 @@ if [ "$LINODE_ID" == '' ]; then
 	
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
-	printf "\n"
-	read -e -s -p "Enter root password: " -i "" ROOT_PWD
-	printf "\n"
+	read -e -p "Enter root password: " -i "" ROOT_PWD
 	read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
-	printf "\n"
-	read -e -s -p "Enter new (non-root) user password: " -i "" USER_PWD
-	printf "\n"
+	read -e -p "Enter new (non-root) user password: " -i "" USER_PWD
 	read -e -p "Enter an SSH public key: " -i "" TMP_PUB_KEY
-	printf "\n"
 	if [ "$TMP_PUB_KEY" == "" ]; then
-		read -e -s -p "Enter an SSH key passphrase: " -i "" SSH_KEY_PASSPHRASE
-		printf "\n"
+		read -e -p "Enter an SSH key passphrase: " -i "" SSH_KEY_PASSPHRASE
 	fi
 	read -e -p "Enter an SSH port: " -i "22" SSH_PORT
-	printf "\n"
-	read -e -s -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
-	printf "\n"
-	read -e -s -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
-	printf "\n"
+	read -e -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
+	read -e -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
 	read -e -p "Enter a Knockd sequence open: " -i "" KNOCKD_SEQ_OPEN
-	printf "\n"
 	read -e -p "Enter a Knockd sequence close: " -i "" KNOCKD_SEQ_CLOSE
-	printf "\n"
-	
+
 	printEmptyLine
 	printTextLeft "All done !"
 fi
