@@ -184,7 +184,6 @@ if [ -f "/tmp/generatedKey" ]; then
 	rm -f /tmp/generatedKey.pub
 fi
 
-printEmptyLine
 printTextLeft "All done !"
 
 #---------------------------------------------------------------------
