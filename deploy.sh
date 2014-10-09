@@ -169,14 +169,19 @@ for i in "${CONF_VALUES[@]}"; do
 	printConfValueLine "$i" "${!i}" >> /root/deploy-config.log
 done
 
-printConfValueLine "SSH_PRIVATE_KEY" "" >> /root/deploy-config.log
-cat /tmp/generatedKey >> /root/deploy-config.log
+# If we generated an SSH key
+if [ -f "/tmp/generatedKey" ]; then
+	printConfValueLine "SSH_KEY_PASSPHRASE" "$SSH_KEY_PASSPHRASE" >> /root/deploy-config.log
 
-printConfValueLine "SSH_PUBLIC_KEY" "" >> /root/deploy-config.log
-cat /tmp/generatedKey.pub >> /root/deploy-config.log
-
-rm -f /tmp/generatedKey
-rm -f /tmp/generatedKey.pub
+	printConfValueLine "SSH_PRIVATE_KEY" "" >> /root/deploy-config.log
+	cat /tmp/generatedKey >> /root/deploy-config.log
+	
+	printConfValueLine "SSH_PUBLIC_KEY" "" >> /root/deploy-config.log
+	cat /tmp/generatedKey.pub >> /root/deploy-config.log
+	
+	rm -f /tmp/generatedKey
+	rm -f /tmp/generatedKey.pub
+fi
 
 printEmptyLine
 printTextLeft "All done !"
