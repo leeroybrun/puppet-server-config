@@ -63,7 +63,7 @@ import 'config.pp'
 # Enable and configure firewall
 #---------------------------------------------------------------------
 	package { "iptables-persistent":
-	    ensure => "installed"
+	    ensure => "latest"
 	}
 
 	include ufw
@@ -86,7 +86,7 @@ import 'config.pp'
 # Let packages be automatically updated
 #---------------------------------------------------------------------
 	package { "unattended-upgrades":
-	    ensure => "installed"
+	    ensure => "latest"
 	}
 
 	file { "/etc/apt/apt.conf.d/10periodic":
@@ -107,10 +107,34 @@ import 'config.pp'
 	}
 
 #---------------------------------------------------------------------
+# Install and configure Exim4
+#---------------------------------------------------------------------
+	include exim4
+	exim4::config { 'exim4-default':
+		configtype = 'internet',
+	    local_interfaces = '127.0.0.1; ::1',
+	    readhost = '',
+	    relay_domains = '',
+	    minimaldns = 'false',
+	    relay_nets = '',
+	    smarthost = '',
+	    use_split_config = 'false',
+	    hide_mailname = '',
+	    mailname_in_oh = 'true',
+	    localdelivery = 'maildir_home'
+	}
+
+	package { "mutt":
+	    ensure  => "latest",
+	    require => Class["exim4"]
+	}
+
+
+#---------------------------------------------------------------------
 # Install and configure LogWatch
 #---------------------------------------------------------------------
 	package { "logwatch":
-	    ensure => "installed"
+	    ensure => "latest"
 	}
 
 	file { "/etc/cron.daily/00logwatch":
@@ -165,7 +189,7 @@ import 'config.pp'
 # Monitor login attempts to SSH and ban bad IPs
 #---------------------------------------------------------------------
 	include fail2ban
-	fail2ban::config { 'default':
+	fail2ban::config { 'fail2ban default':
 		bantime => '1800',
 		maxretry => 3,
 		destemail => $reportEmail,

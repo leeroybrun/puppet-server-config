@@ -194,7 +194,7 @@ printTitleLeft "Installing needed packages for deployment..."
 
 apt-get update -q > /root/deploy-details.log
 apt-get upgrade -q -y > /dev/null
-apt-get install -q -y build-essential ruby-dev git puppet makepasswd mutt > /root/deploy-details.log
+apt-get install -q -y build-essential ruby-dev git puppet makepasswd > /root/deploy-details.log
 gem install -q librarian-puppet > /root/deploy-details.log
 
 printEmptyLine
@@ -279,7 +279,13 @@ printTitleLeft "Sending report to $REPORT_EMAIL..."
 # TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
-mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL" < "You will find all the details attached to this message."
+if ! type "mutt" > /dev/null; then
+	cat /root/deploy.log | mail -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat /root/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat /root/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+else
+	mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL" < "You will find all the details attached to this message."
+fi
 
 printTextLeft "All done !"
 
