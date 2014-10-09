@@ -17,21 +17,69 @@ splitSSHkey() {
 	SSH_KEY_COMMENT="${BASH_REMATCH[3]}"
 }
 
-echo ""
-echo "------------------------------------------------------"
-echo "- Welcome ! - $(date)"
-echo "------------------------------------------------------"
-echo ""
+#---------------------------------------------------------------------
+# Print report functions
+#---------------------------------------------------------------------
+REPORT_COLUMNS=100
+REPORT_CONF_COL_NAME=25
+REPORT_CONF_COL_VAL=73
+REPORT_PAD=$(printf '%0.1s' "-"{1..100})
+
+printLine() {
+	printf "|%*s|\n" $(($REPORT_COLUMNS - 2 )) "$REPORT_PAD"
+}
+
+printEmptyLine() {
+	printf "|%*s|\n" $(($REPORT_COLUMNS )) " "
+}
+
+printTitle() {
+	local title=$1
+   	title="${title} - $(date)"
+   	
+   	printLine
+   	printEmptyLine
+   	printf "|%*s%*s|\n" $(((${#title}+$REPORT_COLUMNS)/2)) "$title" $((((${#title}+$REPORT_COLUMNS)/2)-${#title}+1)) " "
+}
+
+printTitleLeft() {
+	local title=$1
+	
+	printEmptyLine
+	printLine
+   	printf "| %-*s|\n" $(($REPORT_COLUMNS-1)) "$title"
+	printLine
+	printEmptyLine
+}
+
+printTextLeft() {
+	local text=$1
+   	printf "|    %-*s|\n" $(($REPORT_COLUMNS-4)) "$text"
+}
+
+printConfValueLine() {
+	local name=$1
+	local value=$2
+	printEmptyLine
+	printLine
+	printEmptyLine
+   	printf "|%*s: %-*s|\n" $REPORT_CONF_COL_NAME "$name" $REPORT_CONF_COL_VAL "$value"
+}
+
+IP_ADDR=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/')
+
+printTitle "Deployment report for $IP_ADDR - $HOSTNAME"
 
 #---------------------------------------------------------------------
 # No linode ID defined, probably called from shell
 #---------------------------------------------------------------------
 if [ "$LINODE_ID" == '' ]; then
-	echo "- We will ask you for some informations to setup your new box."
-	echo "- If the following values are not provided, they will be randomly generated :"
-	echo "-     root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
-	echo ""
-	echo "------------------------------------------------------"
+	printTitleLeft "Basic configuration..."
+	printTextLeft "We will ask you for some informations to setup your new box."
+	printTextLeft "If the following values are not provided, they will be randomly generated :"
+	printTextLeft "    root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
+	printEmptyLine
+	printLine
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email:" -i "root@localhost" REPORT_EMAIL
 	read -e -p "Enter root password:" -i "" ROOT_PWD
@@ -47,23 +95,19 @@ if [ "$LINODE_ID" == '' ]; then
 	echo ""
 fi
 
+printTitleLeft "Generating non provided params..."
+
 #---------------------------------------------------------------------
 # Generate values for parameters not defined
 #---------------------------------------------------------------------
 if [ "$ROOT_PWD" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No root password provided, generating..."
+	printTextLeft "No root password provided, generating..."
 	ROOT_PWD=$(genpasswd 50)
-	echo "- Root password : $ROOT_PWD"
 fi
 
 if [ "$USER_PWD" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No user password provided, generating..."
+	printTextLeft "No user password provided, generating..."
 	USER_PWD=$(genpasswd 50)
-	echo "- User password : $USER_PWD"
 fi
 
 if [ "$TMP_PUB_KEY" != '' ]; then
@@ -71,107 +115,95 @@ if [ "$TMP_PUB_KEY" != '' ]; then
 fi
 
 if [ "$SSH_KEY_CONTENT" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No SSH key provided, generating..."
+	printTextLeft "No SSH key provided, generating..."
 	rm -f /tmp/generatedKey
 	rm -f /tmp/generatedKey.pub
 	ssh-keygen -t rsa -N "" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
 	TMP_PUB_KEY=$(cat /tmp/generatedKey.pub)
 	splitSSHkey "$TMP_PUB_KEY"
-	echo "------------------------------------------------------"
-	echo "- Public key :"
-	echo "------------------------------------------------------"
-	echo ""
-	cat /tmp/generatedKey.pub
-	echo "------------------------------------------------------"
-	echo "- Private key :"
-	echo "------------------------------------------------------"
-	echo ""
-	cat /tmp/generatedKey
-	
-	rm -f /tmp/generatedKey.pub
-	rm -f /tmp/generatedKey
 fi
 
 if [ "$SSH_PORT" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No SSH port provided, generating..."
+	printTextLeft "No SSH port provided, generating..."
 	SSH_PORT="$(shuf -i 2000-9999 -n 1)"
-	echo "- SSH port : $SSH_PORT"
 fi
 
 if [ "$TW_LOCAL_PASSPHRASE" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No Tripwire local passphrase provided, generating..."
+	printTextLeft "No Tripwire local passphrase provided, generating..."
 	TW_LOCAL_PASSPHRASE=$(genpasswd 50)
-	echo "- Tripwire local passphrase : $TW_LOCAL_PASSPHRASE"
 fi
 
 if [ "$TW_SITE_PASSPHRASE" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No Tripwire site passphrase provided, generating..."
+	printTextLeft "No Tripwire site passphrase provided, generating..."
 	TW_SITE_PASSPHRASE=$(genpasswd 50)
-	echo "- Tripwire site passphrase : $TW_SITE_PASSPHRASE"
 fi
 
 if [ "$KNOCKD_SEQ_OPEN" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No Knockd sequence open provided, generating..."
+	printTextLeft "No Knockd sequence open provided, generating..."
 	KNOCKD_SEQ_OPEN="$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp"
-	echo "- Knockd sequence open : $KNOCKD_SEQ_OPEN"
 fi
 
 if [ "$KNOCKD_SEQ_CLOSE" == '' ]; then
-	echo ""
-	echo "------------------------------------------------------"
-	echo "- No Knockd sequence close provided, generating..."
+	printTextLeft "No Knockd sequence close provided, generating..."
 	KNOCKD_SEQ_CLOSE="$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp"
-	echo "- Knockd sequence close : $KNOCKD_SEQ_CLOSE"
 fi
 
-echo ""
-echo "------------------------------------------------------"
-echo "- All config values entered/generated, starting..."
-echo "------------------------------------------------------"
-echo ""
+printEmptyLine
+printTextLeft "All done !"
+
+#---------------------------------------------------------------------
+# Generating configuration report...
+#---------------------------------------------------------------------
+printTitleLeft "Generating configuration report..."
+
+printTitle "configuration report" > /root/deploy-config.log
+
+CONF_VALUES=( "IP_ADDR" "HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "ROOT_PWD" "USER_NAME" "USER_PWD" "TW_LOCAL_PASSPHRASE" "TW_SITE_PASSPHRASE" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
+
+for i in "${CONF_VALUES[@]}"; do
+	printConfValueLine "$i" "${!i}" >> /root/deploy-config.log
+done
+
+printConfValueLine "SSH_PRIVATE_KEY" "" >> /root/deploy-config.log
+cat /tmp/generatedKey >> /root/deploy-config.log
+
+printConfValueLine "SSH_PUBLIC_KEY" "" >> /root/deploy-config.log
+cat /tmp/generatedKey.pub >> /root/deploy-config.log
+
+rm -f /tmp/generatedKey
+rm -f /tmp/generatedKey.pub
+
+printEmptyLine
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Install needed packages for deployment
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Installing needed packages for deployment..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Installing needed packages for deployment..."
+
 apt-get update -q > /root/deploy-details.log
 apt-get upgrade -q -y > /dev/null
-apt-get install -q -y build-essential ruby-dev git puppet makepasswd > /root/deploy-details.log
-gem install librarian-puppet > /root/deploy-details.log 2>&1
+apt-get install -q -y build-essential ruby-dev git puppet makepasswd mutt > /root/deploy-details.log
+gem install -q librarian-puppet > /root/deploy-details.log
+
+printEmptyLine
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Hash passwords
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Hashing passwords..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Hashing passwords..."
+
 ROOT_PWD_HASHED=$(mkpasswd -m sha-512 $ROOT_PWD | tr -d '\n')
 USER_PWD_HASHED=$(mkpasswd -m sha-512 $USER_PWD | tr -d '\n')
+
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Get Puppet manifests from Github
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Download Puppet manifests from Github..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Download Puppet manifests from Github..."
+
 if [ ! -d "/etc/puppet" ]; then
 	mkdir /etc/puppet
 fi
@@ -187,24 +219,22 @@ cd /etc/puppet
 
 rm -rf /tmp/puppet-conf
 
+printTextLeft "All done !"
+
 #---------------------------------------------------------------------
 # Install Puppet modules dependencies
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Install Puppet modules dependencies..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Install Puppet modules dependencies..."
+
 librarian-puppet install
+
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Replace values in config.pp with variables content
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Replace values in Puppet config manifest..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Replace values in Puppet config manifest..."
+
 sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/ROOT_PWD_HASHED/$(echo $ROOT_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
@@ -218,47 +248,44 @@ sed -i.bak "s/TW_SITE_PASSPHRASE/$(echo $TW_SITE_PASSPHRASE | sed -e 's/[\/&]/\\
 sed -i.bak "s/KNOCKD_SEQ_OPEN/$(echo $KNOCKD_SEQ_OPEN | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 
+printTextLeft "All done !"
+
 #---------------------------------------------------------------------
 # Here we go !
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Applying Puppet manifest..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Applying Puppet manifest..."
+
 puppet apply manifests/site.pp > /root/deploy-details.log
+
+printEmptyLine
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Sending report to email provided
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Sending report to $REPORT_EMAIL..."
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Sending report to $REPORT_EMAIL..."
+
 # TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
-cat /root/deploy.log | mail -s "Deploying report for $HOSTNAME" "$REPORT_EMAIL"
+mutt -s "Deploying report for $IP_ADDR - $HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL" < "You will find all the details attached to this message."
+
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Removing report from filesystem
 #---------------------------------------------------------------------
-echo ""
-echo "------------------------------------------------------"
-echo "- Removing report from filesystem"
-echo "------------------------------------------------------"
-echo ""
+printTitleLeft "Removing report from filesystem"
+
 rm -f /root/deploy.log
 rm -f /root/deploy-details.log
+rm -f /root/deploy-config.log
 
-echo ""
-echo "------------------------------------------------------"
-echo "- All done !"
-echo "------------------------------------------------------"
-echo ""
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Reboot to be sure all changes are applied
 #---------------------------------------------------------------------
+printTitleLeft "Reboot to be sure all changes are applied..."
+
 reboot
