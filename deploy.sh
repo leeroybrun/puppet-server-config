@@ -277,7 +277,7 @@ printTextLeft "All done !"
 printTitleLeft "Sending report to $REPORT_EMAIL..."
 
 if [ -d "/etc/exim4" ]; then
-	apt-get install mutt
+	apt-get install -y -q mutt
 	MUTT_INSTALLED=1
 else
 	MUTT_INSTALLED=0
@@ -291,7 +291,7 @@ if [ MUTT_INSTALLED == 0 ]; then
 	cat /root/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat /root/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 else
-	mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL" < "You will find all the details attached to this message."
+	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL"
 fi
 
 printTextLeft "All done !"
