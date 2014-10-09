@@ -17,11 +17,7 @@ wget -q https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master
 
 ## TODO
 
-- Better report
-    - Better spaces
-    - Show "OK" for each sections
-    - Disable gem install output
-    - Print summary of all parameters
+- Install mutt in deploy.sh, not with puppet. Check before if exim was successfully installed, if not, send with mail
 - Encrypt report before sending by email
 - Check psad Puppet module for iptables/ip6tables default logging rule (http://www.cipherdyne.org/psad/docs/fwconfig.html)
 - Verify puppet modules & improve them if necessary 
