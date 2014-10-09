@@ -80,19 +80,21 @@ if [ "$LINODE_ID" == '' ]; then
 	printTextLeft "    root pwd, user pwd, SSH key, SSH port, Tripwire passphrases, Knockd sequences"
 	printEmptyLine
 	printLine
+	
 	# We should ask the user to manually enter values
-	read -e -p "Enter a report email:" -i "root@localhost" REPORT_EMAIL
-	read -e -p "Enter root password:" -i "" ROOT_PWD
-	read -e -p "Enter new (non-root) user name:" -i "myUser" USER_NAME
-	read -e -p "Enter new (non-root) user password:" -i "" USER_PWD
-	read -e -p "Enter an SSH public key:" -i "" TMP_PUB_KEY
-	read -e -p "Enter an SSH port:" -i "22" SSH_PORT
-	read -e -p "Enter a Tripwire local passphrase:" -i "22" TW_LOCAL_PASSPHRASE
-	read -e -p "Enter a Tripwire site passphrase:" -i "22" TW_SITE_PASSPHRASE
-	read -e -p "Enter a Knockd sequence open:" -i "" KNOCKD_SEQ_OPEN
-	read -e -p "Enter a Knockd sequence close:" -i "" KNOCKD_SEQ_CLOSE
-	echo "------------------------------------------------------"
-	echo ""
+	read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
+	read -e -p "Enter root password: " -i "" ROOT_PWD
+	read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
+	read -e -p "Enter new (non-root) user password: " -i "" USER_PWD
+	read -e -p "Enter an SSH public key: " -i "" TMP_PUB_KEY
+	read -e -p "Enter an SSH port: " -i "22" SSH_PORT
+	read -e -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
+	read -e -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
+	read -e -p "Enter a Knockd sequence open: " -i "" KNOCKD_SEQ_OPEN
+	read -e -p "Enter a Knockd sequence close: " -i "" KNOCKD_SEQ_CLOSE
+	
+	printEmptyLine
+	printTextLeft "All done !"
 fi
 
 printTitleLeft "Generating non provided params..."
