@@ -84,18 +84,29 @@ if [ "$LINODE_ID" == '' ]; then
 	
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
+	print "\n"
 	read -e -s -p "Enter root password: " -i "" ROOT_PWD
+	print "\n"
 	read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
+	print "\n"
 	read -e -s -p "Enter new (non-root) user password: " -i "" USER_PWD
+	print "\n"
 	read -e -p "Enter an SSH public key: " -i "" TMP_PUB_KEY
+	print "\n"
 	if [ "$TMP_PUB_KEY" == "" ]; then
 		read -e -s -p "Enter an SSH key passphrase: " -i "" SSH_KEY_PASSPHRASE
+		print "\n"
 	fi
 	read -e -p "Enter an SSH port: " -i "22" SSH_PORT
+	print "\n"
 	read -e -s -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
+	print "\n"
 	read -e -s -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
+	print "\n"
 	read -e -p "Enter a Knockd sequence open: " -i "" KNOCKD_SEQ_OPEN
+	print "\n"
 	read -e -p "Enter a Knockd sequence close: " -i "" KNOCKD_SEQ_CLOSE
+	print "\n"
 	
 	printEmptyLine
 	printTextLeft "All done !"
