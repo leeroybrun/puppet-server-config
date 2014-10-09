@@ -69,7 +69,7 @@ printConfValueLine() {
 IP_ADDR=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/')
 FQDN_HOSTNAME=$(hostname --fqdn)
 
-printTitle "Deployment report for $IP_ADDR - $FQDN_HOSTNAME"
+printTitle "Deployment report for $FQDN_HOSTNAME"
 
 #---------------------------------------------------------------------
 # No linode ID defined, probably called from shell
@@ -162,7 +162,7 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Generating configuration report..."
 
-printTitle "configuration report" > /root/deploy-config.log
+printTitle "Configuration report" > /root/deploy-config.log
 
 CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "ROOT_PWD" "USER_NAME" "USER_PWD" "TW_LOCAL_PASSPHRASE" "TW_SITE_PASSPHRASE" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
 
