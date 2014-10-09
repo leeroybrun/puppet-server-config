@@ -84,6 +84,7 @@ if [ "$LINODE_ID" == '' ]; then
 	
 	# We should ask the user to manually enter values
 	read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
+	read -e -p "Enter a password to encrypt report: " -i "" REPORT_PWD
 	read -e -p "Enter root password: " -i "" ROOT_PWD
 	read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
 	read -e -p "Enter new (non-root) user password: " -i "" USER_PWD
