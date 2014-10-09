@@ -67,8 +67,9 @@ printConfValueLine() {
 }
 
 IP_ADDR=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/')
+FQDN_HOSTNAME=$(hostname --fqdn)
 
-printTitle "Deployment report for $IP_ADDR - $HOSTNAME"
+printTitle "Deployment report for $IP_ADDR - $FQDN_HOSTNAME"
 
 #---------------------------------------------------------------------
 # No linode ID defined, probably called from shell
@@ -123,7 +124,7 @@ if [ "$SSH_KEY_CONTENT" == '' ]; then
 	printTextLeft "No SSH key provided, generating..."
 	rm -f /tmp/generatedKey
 	rm -f /tmp/generatedKey.pub
-	ssh-keygen -q -t rsa -N "$SSH_KEY_PASSPHRASE" -C "$USER_NAME@$HOSTNAME" -f /tmp/generatedKey
+	ssh-keygen -q -t rsa -N "$SSH_KEY_PASSPHRASE" -C "$USER_NAME@$FQDN_HOSTNAME" -f /tmp/generatedKey
 	TMP_PUB_KEY=$(cat /tmp/generatedKey.pub)
 	splitSSHkey "$TMP_PUB_KEY"
 fi
@@ -163,7 +164,7 @@ printTitleLeft "Generating configuration report..."
 
 printTitle "configuration report" > /root/deploy-config.log
 
-CONF_VALUES=( "IP_ADDR" "HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "ROOT_PWD" "USER_NAME" "USER_PWD" "TW_LOCAL_PASSPHRASE" "TW_SITE_PASSPHRASE" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
+CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "ROOT_PWD" "USER_NAME" "USER_PWD" "TW_LOCAL_PASSPHRASE" "TW_SITE_PASSPHRASE" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
 
 for i in "${CONF_VALUES[@]}"; do
 	printConfValueLine "$i" "${!i}" >> /root/deploy-config.log
@@ -278,7 +279,7 @@ printTitleLeft "Sending report to $REPORT_EMAIL..."
 # TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
-mutt -s "Deploying report for $IP_ADDR - $HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL" < "You will find all the details attached to this message."
+mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL" < "You will find all the details attached to this message."
 
 printTextLeft "All done !"
 
