@@ -196,7 +196,6 @@ import 'config.pp'
 #---------------------------------------------------------------------
 # Monitor ports scanning and other bad things
 #---------------------------------------------------------------------
-	include psad
 	class { 'psad' :
 		firewall_enable => true,
 		config => {
