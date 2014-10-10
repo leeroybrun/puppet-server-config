@@ -228,6 +228,8 @@ cp -r puppet/* /etc/puppet
 
 cd /etc/puppet
 
+cp /etc/puppet/manifests/config.example.pp /etc/puppet/manifests/config.pp
+
 rm -rf /tmp/puppet-conf
 
 printTextLeft "All done !"
@@ -287,11 +289,12 @@ fi
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
 if [ MUTT_INSTALLED == 0 ]; then
+	cat /etc/puppet/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat /root/deploy.log | mail -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat /root/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat /root/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 else
-	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL"
+	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a /etc/puppet/manifests/config.pp -a /root/deploy.log -a /root/deploy-details.log -a /root/deploy-config.log "$REPORT_EMAIL"
 fi
 
 printTextLeft "All done !"
@@ -304,6 +307,15 @@ printTitleLeft "Removing report from filesystem"
 rm -f /root/deploy.log
 rm -f /root/deploy-details.log
 rm -f /root/deploy-config.log
+
+printTextLeft "All done !"
+
+#---------------------------------------------------------------------
+# Removing Puppet config from fs
+#---------------------------------------------------------------------
+printTitleLeft "Removing Puppet config from filesystem"
+
+rm -f /etc/puppet/manifests/config.pp
 
 printTextLeft "All done !"
 
