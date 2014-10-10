@@ -83,10 +83,16 @@ if [ "$LINODE_ID" == '' ]; then
 	printLine
 	
 	# We should ask the user to manually enter values
-	read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
-	read -e -p "Enter a password to encrypt report: " -i "" REPORT_PWD
+	while [[ $REPORT_EMAIL = "" ]]; do
+		read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
+	done
+	while [[ $REPORT_PWD = "" ]]; do
+		read -e -p "Enter a password to encrypt report: " -i "" REPORT_PWD
+	done
 	read -e -p "Enter root password: " -i "" ROOT_PWD
-	read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
+	while [[ $USER_NAME = "" ]]; do
+		read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
+	done
 	read -e -p "Enter new (non-root) user password: " -i "" USER_PWD
 	read -e -p "Enter an SSH public key: " -i "" TMP_PUB_KEY
 	if [ "$TMP_PUB_KEY" == "" ]; then
