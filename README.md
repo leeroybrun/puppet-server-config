@@ -17,6 +17,7 @@ wget -q https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master
 
 ## TODO
 
+- Check : https://telekomlabs.github.io
 - Encrypt report before sending by email
 - Check tripwire puppet errors when deploying
 - Check psad Puppet module for iptables/ip6tables default logging rule (http://www.cipherdyne.org/psad/docs/fwconfig.html)
