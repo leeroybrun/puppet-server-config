@@ -21,6 +21,7 @@ wget -q https://raw.githubusercontent.com/leeroybrun/puppet-server-config/master
      - https://forge.puppetlabs.com/hardening/ssh_hardening
      - https://forge.puppetlabs.com/hardening/os_hardening
 - Check : http://www.tenable.com/products/nessus
+- Check : https://github.com/sandstorm-io/sandstorm
 - Encrypt report before sending by email
 - Check tripwire puppet errors when deploying
 - Check psad Puppet module for iptables/ip6tables default logging rule (http://www.cipherdyne.org/psad/docs/fwconfig.html)
