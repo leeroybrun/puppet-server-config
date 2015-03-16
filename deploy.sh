@@ -198,9 +198,9 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Installing needed packages for deployment..."
 
-apt-get update -q > ~/deploy-details.log
+apt-get update -qq > ~/deploy-details.log
 apt-get upgrade -q -y > /dev/null
-apt-get install -q -y build-essential ruby-dev git puppet makepasswd > ~/deploy-details.log
+apt-get install -q -y build-essential make ruby-dev git puppet makepasswd > ~/deploy-details.log
 gem install -q librarian-puppet > ~/deploy-details.log
 
 printEmptyLine
@@ -215,6 +215,11 @@ ROOT_PWD_HASHED=$(makepasswd -m sha-512 $ROOT_PWD | tr -d '\n')
 USER_PWD_HASHED=$(makepasswd -m sha-512 $USER_PWD | tr -d '\n')
 
 printTextLeft "All done !"
+
+#---------------------------------------------------------------------
+# Download Hardening Framework
+#---------------------------------------------------------------------
+
 
 #---------------------------------------------------------------------
 # Get Puppet manifests from Github
