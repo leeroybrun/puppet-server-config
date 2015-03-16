@@ -1,16 +1,16 @@
-forge "https://forgeapi.puppetlabs.com"
+forge "http://forge.puppetlabs.com"
 
 mod 'saz/ssh'
-mod 'puppetlabs-apt'
-mod 'justinclayton-sudo'
-mod 'attachmentgenie-ufw'
-mod 'thias-sysctl'
-mod 'tedivm-psad'
-mod 'thbe-rkhunter'
-mod 'leeroybrun-fail2ban',
+mod 'puppetlabs/apt'
+mod 'justinclayton/sudo'
+mod 'attachmentgenie/ufw'
+mod 'thias/sysctl'
+mod 'tedivm/psad'
+mod 'thbe/rkhunter'
+mod 'leeroybrun/fail2ban',
   :git => "https://github.com/leeroybrun/puppet-fail2ban.git"
-mod 'leeroybrun-tripwire',
+mod 'leeroybru/tripwire',
   :git => "https://github.com/leeroybrun/puppet-tripwire.git"
-mod 'leeroybrun-exim4',
+mod 'leeroybrun/exim4',
   :git => "https://github.com/leeroybrun/puppet-exim4.git"
-mod 'juasiepo-knockd'
+mod 'juasiepo/knockd'
