@@ -1,6 +1,6 @@
 forge "https://forgeapi.puppetlabs.com"
 
-dependency 'saz/ssh', '>= 2.3.6'
+mod 'saz/ssh'
 mod 'puppetlabs-apt'
 mod 'justinclayton-sudo'
 mod 'attachmentgenie-ufw'
