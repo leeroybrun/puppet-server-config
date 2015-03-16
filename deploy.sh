@@ -202,6 +202,7 @@ apt-get update -qq > ~/deploy-details.log
 apt-get upgrade -q -y > /dev/null
 apt-get install -q -y build-essential make ruby-dev git puppet makepasswd > ~/deploy-details.log
 gem install -q librarian-puppet > ~/deploy-details.log
+gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k > ~/deploy-details.log
 
 printEmptyLine
 printTextLeft "All done !"
@@ -217,27 +218,53 @@ USER_PWD_HASHED=$(makepasswd -m sha-512 $USER_PWD | tr -d '\n')
 printTextLeft "All done !"
 
 #---------------------------------------------------------------------
+# Create Puppet config folder
+#---------------------------------------------------------------------
+printTitleLeft "Creating Puppet config folder..."
+
+if [ ! -d "/etc/puppet" ]; then
+	mkdir /etc/puppet
+fi
+if [ ! -d "/etc/puppet/hardening" ]; then
+	mkdir /etc/puppet/hardening
+fi
+if [ ! -d "/etc/puppet/srvConfig" ]; then
+	mkdir /etc/puppet/srvConfig
+fi
+
+printTextLeft "All done !"
+
+#---------------------------------------------------------------------
 # Download Hardening Framework
 #---------------------------------------------------------------------
+printTitleLeft "Downloading Hardening Framework..."
 
+mkdir /tmp/puppet-conf-hf
+cd /tmp/puppet-conf-hf
+wget -q https://github.com/TelekomLabs/example-puppet-hardening/tarball/master -O hardening.tar.gz > ~/deploy-details.log
+tar -zxf hardening.tar.gz --strip-components=1 > ~/deploy-details.log
+rm -f hardening.tar.gz
+cp -r * /etc/puppet/hardening
+
+cd /etc/puppet/hardening
+r10k -v info puppetfile install
+
+rm -rf /tmp/puppet-conf-hf
+
+printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Get Puppet manifests from Github
 #---------------------------------------------------------------------
 printTitleLeft "Download Puppet manifests from Github..."
 
-if [ ! -d "/etc/puppet" ]; then
-	mkdir /etc/puppet
-fi
-cd /etc/puppet
-
 mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
 wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz > ~/deploy-details.log
 tar -zxf puppet.tar.gz --strip-components=1 > ~/deploy-details.log
-cp -r puppet/* /etc/puppet
+cp -r puppet/* /etc/puppet/srvConfig
 
-cd /etc/puppet
+cd /etc/puppet/srvConfig
 
 cp /etc/puppet/manifests/config.example.pp /etc/puppet/manifests/config.pp
 
@@ -248,11 +275,11 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 # Install Puppet modules dependencies
 #---------------------------------------------------------------------
-printTitleLeft "Install Puppet modules dependencies..."
+#printTitleLeft "Install Puppet modules dependencies..."
 
-librarian-puppet install
+#librarian-puppet install
 
-printTextLeft "All done !"
+#printTextLeft "All done !"
 
 #---------------------------------------------------------------------
 # Replace values in config.pp with variables content
@@ -279,7 +306,8 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Applying Puppet manifest..."
 
-puppet apply manifests/site.pp > ~/deploy-details.log
+cd /etc/puppet/srvConfig
+r10k -v info puppetfile install
 
 printEmptyLine
 printTextLeft "All done !"
