@@ -201,7 +201,7 @@ printTitleLeft "Installing needed packages for deployment..."
 apt-get update -qq >> ~/deploy-details.log
 apt-get upgrade -q -y >> /dev/null
 apt-get install -q -y build-essential make ruby-dev git puppet makepasswd >> ~/deploy-details.log
-gem install -q librarian-puppet >> ~/deploy-details.log
+#gem install -q librarian-puppet >> ~/deploy-details.log
 gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k >> ~/deploy-details.log
 
 printEmptyLine
