@@ -211,8 +211,8 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Hashing passwords..."
 
-ROOT_PWD_HASHED=$(mkpasswd -m sha-512 $ROOT_PWD | tr -d '\n')
-USER_PWD_HASHED=$(mkpasswd -m sha-512 $USER_PWD | tr -d '\n')
+ROOT_PWD_HASHED=$(makepasswd -m sha-512 $ROOT_PWD | tr -d '\n')
+USER_PWD_HASHED=$(makepasswd -m sha-512 $USER_PWD | tr -d '\n')
 
 printTextLeft "All done !"
 
