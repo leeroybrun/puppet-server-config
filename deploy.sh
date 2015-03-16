@@ -198,11 +198,11 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Installing needed packages for deployment..."
 
-apt-get update -qq > ~/deploy-details.log
-apt-get upgrade -q -y > /dev/null
-apt-get install -q -y build-essential make ruby-dev git puppet makepasswd > ~/deploy-details.log
-gem install -q librarian-puppet > ~/deploy-details.log
-gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k > ~/deploy-details.log
+apt-get update -qq >> ~/deploy-details.log
+apt-get upgrade -q -y >> /dev/null
+apt-get install -q -y build-essential make ruby-dev git puppet makepasswd >> ~/deploy-details.log
+gem install -q librarian-puppet >> ~/deploy-details.log
+gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k >> ~/deploy-details.log
 
 printEmptyLine
 printTextLeft "All done !"
@@ -241,8 +241,8 @@ printTitleLeft "Downloading Hardening Framework..."
 
 mkdir /tmp/puppet-conf-hf
 cd /tmp/puppet-conf-hf
-wget -q https://github.com/TelekomLabs/example-puppet-hardening/tarball/master -O hardening.tar.gz > ~/deploy-details.log
-tar -zxf hardening.tar.gz --strip-components=1 > ~/deploy-details.log
+wget -q https://github.com/TelekomLabs/example-puppet-hardening/tarball/master -O hardening.tar.gz >> ~/deploy-details.log
+tar -zxf hardening.tar.gz --strip-components=1 >> ~/deploy-details.log
 rm -f hardening.tar.gz
 cp -r * /etc/puppet/hardening
 
@@ -260,13 +260,13 @@ printTitleLeft "Download Puppet manifests from Github..."
 
 mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
-wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz > ~/deploy-details.log
-tar -zxf puppet.tar.gz --strip-components=1 > ~/deploy-details.log
+wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz >> ~/deploy-details.log
+tar -zxf puppet.tar.gz --strip-components=1 >> ~/deploy-details.log
 cp -r puppet/* /etc/puppet/srvConfig
 
 cd /etc/puppet/srvConfig
 
-cp /etc/puppet/manifests/config.example.pp /etc/puppet/manifests/config.pp
+cp /etc/puppet/srvConfig/manifests/config.example.pp /etc/puppet/srvConfig/manifests/config.pp
 
 rm -rf /tmp/puppet-conf
 
@@ -286,18 +286,18 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Replace values in Puppet config manifest..."
 
-sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/ROOT_PWD_HASHED/$(echo $ROOT_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/USER_PWD_HASHED/$(echo $USER_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/SSH_KEY_COMMENT/$(echo $SSH_KEY_COMMENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/SSH_KEY_TYPE/$(echo $SSH_KEY_TYPE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/SSH_KEY_CONTENT/$(echo $SSH_KEY_CONTENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/SSH_PORT/$(echo $SSH_PORT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/TW_LOCAL_PASSPHRASE/$(echo $TW_LOCAL_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/TW_SITE_PASSPHRASE/$(echo $TW_SITE_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/KNOCKD_SEQ_OPEN/$(echo $KNOCKD_SEQ_OPEN | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
-sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/ROOT_PWD_HASHED/$(echo $ROOT_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/USER_PWD_HASHED/$(echo $USER_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/SSH_KEY_COMMENT/$(echo $SSH_KEY_COMMENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/SSH_KEY_TYPE/$(echo $SSH_KEY_TYPE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/SSH_KEY_CONTENT/$(echo $SSH_KEY_CONTENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/SSH_PORT/$(echo $SSH_PORT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/TW_LOCAL_PASSPHRASE/$(echo $TW_LOCAL_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/TW_SITE_PASSPHRASE/$(echo $TW_SITE_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/KNOCKD_SEQ_OPEN/$(echo $KNOCKD_SEQ_OPEN | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
 
 printTextLeft "All done !"
 
@@ -318,7 +318,7 @@ printTextLeft "All done !"
 printTitleLeft "Sending report to $REPORT_EMAIL..."
 
 if [ -d "/etc/exim4" ]; then
-	apt-get install -y -q mutt > ~/deploy-details.log
+	apt-get install -y -q mutt >> ~/deploy-details.log
 	MUTT_INSTALLED=1
 else
 	MUTT_INSTALLED=0
@@ -328,12 +328,12 @@ fi
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
 if [ MUTT_INSTALLED == 0 ]; then
-	cat /etc/puppet/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat /etc/puppet/srvConfig/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy.log | mail -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 else
-	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a "/etc/puppet/manifests/config.pp" -a "~/deploy.log" -a "~/deploy-details.log" -a "~/deploy-config.log" -- "$REPORT_EMAIL"
+	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a "/etc/puppet/srvConfig/manifests/config.pp" -a "~/deploy.log" -a "~/deploy-details.log" -a "~/deploy-config.log" -- "$REPORT_EMAIL"
 fi
 
 printTextLeft "All done !"
@@ -354,7 +354,7 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Removing Puppet config from filesystem"
 
-rm -f /etc/puppet/manifests/config.pp
+rm -f /etc/puppet/srvConfig/manifests/config.pp
 
 printTextLeft "All done !"
 
