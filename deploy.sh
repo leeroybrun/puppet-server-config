@@ -317,11 +317,15 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Sending report to $REPORT_EMAIL..."
 
-if [ -d "/etc/exim4" ]; then
-	apt-get install -y -q mutt >> ~/deploy-details.log
-	MUTT_INSTALLED=1
-else
-	MUTT_INSTALLED=0
+MUTT_INSTALLED=$(dpkg-query -W -f='${Status}' mutt 2>/dev/null | grep -c "ok installed")
+
+if [ $MUTT_INSTALLED -eq 0 ]; then
+	if [ -d "/etc/exim4" ]; then
+		apt-get install -y -q mutt >> ~/deploy-details.log
+		MUTT_INSTALLED=1
+	else
+		MUTT_INSTALLED=0
+	fi
 fi
 
 # TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
