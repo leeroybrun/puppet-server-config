@@ -331,9 +331,8 @@ fi
 # TODO: add REPORT_PWD param & encrypt file as it contains sensitive informations !
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
-if [ MUTT_INSTALLED == 0 ]; then
+if [ $MUTT_INSTALLED == 0 ]; then
 	cat /etc/puppet/srvConfig/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
-	cat ~/deploy.log | mail -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 else
