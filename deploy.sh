@@ -186,7 +186,7 @@ printTitleLeft "Installing needed packages for deployment..."
 
 apt-get update -qq >> ~/deploy-details.log
 apt-get upgrade -q -y >> /dev/null
-apt-get install -q -y build-essential make ruby-dev git puppet makepasswd >> ~/deploy-details.log
+apt-get install -q -y build-essential make ruby-dev git puppet makepasswd whois >> ~/deploy-details.log # whois will install mkpasswd
 gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k >> ~/deploy-details.log
 
 printEmptyLine
@@ -197,7 +197,7 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Hashing passwords..."
 
-USER_PWD_HASHED=$(makepasswd -m sha-512 $USER_PWD | tr -d '\n')
+USER_PWD_HASHED=$(mkpasswd -m sha-512 $USER_PWD | tr -d '\n')
 
 printTextLeft "All done !"
 
