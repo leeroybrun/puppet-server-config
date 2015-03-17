@@ -11,6 +11,7 @@ mod 'thbe/rkhunter'
 mod 'leeroybrun/fail2ban',
   :git => "https://github.com/leeroybrun/puppet-fail2ban.git"
 mod 'juasiepo/knockd'
+mod 'thias/postfix'
 
 mod 'hardening/os_hardening', :latest
 mod 'hardening/ssh_hardening', :latest
