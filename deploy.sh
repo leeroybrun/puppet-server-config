@@ -1,11 +1,13 @@
 #!/bin/bash
 
-exec > >(tee ~/deploy.log)
+$LOG_DIR="$HOME"
+
+exec > >(tee "$LOG_DIR/deploy.log")
 exec 2>&1
 
-echo "" > ~/deploy.log
-echo "" > ~/deploy-details.log
-echo "" > ~/deploy-config.log
+echo "" > "$LOG_DIR/deploy.log"
+echo "" > "$LOG_DIR/deploy-details.log"
+echo "" > "$LOG_DIR/deploy-config.log"
 
 genpasswd() {
 	local l=$1
@@ -155,23 +157,23 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Generating configuration report..."
 
-printTitle "Configuration report" > ~/deploy-config.log
+printTitle "Configuration report" > "$LOG_DIR/deploy-config.log"
 
 CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "USER_NAME" "USER_PWD" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
 
 for i in "${CONF_VALUES[@]}"; do
-	printConfValueLine "$i" "${!i}" >> ~/deploy-config.log
+	printConfValueLine "$i" "${!i}" >> "$LOG_DIR/deploy-config.log"
 done
 
 # If we generated an SSH key
 if [ -f "/tmp/generatedKey" ]; then
-	printConfValueLine "SSH_KEY_PASSPHRASE" "$SSH_KEY_PASSPHRASE" >> ~/deploy-config.log
+	printConfValueLine "SSH_KEY_PASSPHRASE" "$SSH_KEY_PASSPHRASE" >> "$LOG_DIR/deploy-config.log"
 
-	printConfValueLine "SSH_PRIVATE_KEY" "" >> ~/deploy-config.log
-	cat /tmp/generatedKey >> ~/deploy-config.log
+	printConfValueLine "SSH_PRIVATE_KEY" "" >> "$LOG_DIR/deploy-config.log"
+	cat /tmp/generatedKey >> "$LOG_DIR/deploy-config.log"
 	
-	printConfValueLine "SSH_PUBLIC_KEY" "" >> ~/deploy-config.log
-	cat /tmp/generatedKey.pub >> ~/deploy-config.log
+	printConfValueLine "SSH_PUBLIC_KEY" "" >> "$LOG_DIR/deploy-config.log"
+	cat /tmp/generatedKey.pub >> "$LOG_DIR/deploy-config.log"
 	
 	rm -f /tmp/generatedKey
 	rm -f /tmp/generatedKey.pub
@@ -184,10 +186,10 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Installing needed packages for deployment..."
 
-apt-get update -qq >> ~/deploy-details.log
+apt-get update -qq >> "$LOG_DIR/deploy-details.log"
 apt-get upgrade -q -y >> /dev/null
-apt-get install -q -y build-essential make ruby-dev git puppet makepasswd whois >> ~/deploy-details.log # whois will install mkpasswd
-gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k >> ~/deploy-details.log
+apt-get install -q -y build-essential make ruby-dev git puppet makepasswd whois >> "$LOG_DIR/deploy-details.log" # whois will install mkpasswd
+gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k >> "$LOG_DIR/deploy-details.log"
 
 printEmptyLine
 printTextLeft "All done !"
@@ -219,8 +221,8 @@ printTitleLeft "Download Puppet manifests from Github..."
 
 mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
-wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz >> ~/deploy-details.log
-tar -zxf puppet.tar.gz --strip-components=1 >> ~/deploy-details.log
+wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz >> "$LOG_DIR/deploy-details.log"
+tar -zxf puppet.tar.gz --strip-components=1 >> "$LOG_DIR/deploy-details.log"
 cp -r puppet/* /etc/puppet
 
 cd /etc/puppet
@@ -268,7 +270,7 @@ MUTT_INSTALLED=$(dpkg-query -W -f='${Status}' mutt 2>/dev/null | grep -c "ok ins
 
 if [ $MUTT_INSTALLED -eq 0 ]; then
 	if [ -d "/etc/exim4" ]; then
-		apt-get install -y -q mutt >> ~/deploy-details.log
+		apt-get install -y -q mutt >> "$LOG_DIR/deploy-details.log"
 		MUTT_INSTALLED=1
 	else
 		MUTT_INSTALLED=0
@@ -280,11 +282,11 @@ fi
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
 if [ $MUTT_INSTALLED == 0 ]; then
 	cat /etc/puppet/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
-	cat ~/deploy.log | mail -s "Deploying report $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
-	cat ~/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
-	cat ~/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat "$LOG_DIR/deploy.log" | mail -s "Deploying report $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat "$LOG_DIR/deploy-conf.log" | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat "$LOG_DIR/deploy-details.log" | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 else
-	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a "/etc/puppet/manifests/config.pp" -a "~/deploy.log" -a "~/deploy-details.log" -a "~/deploy-config.log" -- "$REPORT_EMAIL"
+	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a "/etc/puppet/manifests/config.pp" -a "$LOG_DIR/deploy.log" -a "$LOG_DIR/deploy-details.log" -a "$LOG_DIR/deploy-config.log" -- "$REPORT_EMAIL"
 fi
 
 printTextLeft "All done !"
@@ -294,9 +296,9 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Removing report from filesystem"
 
-rm -f ~/deploy.log
-rm -f ~/deploy-details.log
-rm -f ~/deploy-config.log
+rm -f "$LOG_DIR/deploy.log"
+rm -f "$LOG_DIR/deploy-details.log"
+rm -f "$LOG_DIR/deploy-config.log"
 
 printTextLeft "All done !"
 
