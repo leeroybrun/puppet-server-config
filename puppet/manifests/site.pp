@@ -122,7 +122,7 @@ import 'config.pp'
 		recipient_delimiter => "+",
 		inet_interfaces => "localhost",
 		mynetworks => "127.0.0.0/8, [::1]/128",
-		mydestination => "${$mailHostName}, localhost"
+		mydestination => "localhost"
 		mynetworks_style => "host"
 	}
 	
