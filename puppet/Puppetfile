@@ -10,8 +10,6 @@ mod 'tedivm/psad'
 mod 'thbe/rkhunter'
 mod 'leeroybrun/fail2ban',
   :git => "https://github.com/leeroybrun/puppet-fail2ban.git"
-mod 'leeroybrun/exim4',
-  :git => "https://github.com/leeroybrun/puppet-exim4.git"
 mod 'juasiepo/knockd'
 
 mod 'hardening/os_hardening', :latest
