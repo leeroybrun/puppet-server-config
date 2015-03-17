@@ -18,16 +18,35 @@ import 'config.pp'
 	}
 
 #---------------------------------------------------------------------
-# Change root password and create a new user
+# Hardening Framework
 #---------------------------------------------------------------------
-	user {'root':
-		password => $rootPwd
+	class { 'os_hardening':
+		password_max_age => 99999
+	}
+	class { 'ssh_hardening::server':
+		ports => [ $sshPort ],
+		server_options => {
+			'PasswordAuthentication' => 'no',
+			'PermitRootLogin'        => 'no',
+			'AllowUsers'		 => $newUserName
+		}
 	}
 
+#---------------------------------------------------------------------
+# Disable root account
+#---------------------------------------------------------------------
+	user { 'root':
+		password => '*',
+	}
+
+#---------------------------------------------------------------------
+# Create a new user
+#---------------------------------------------------------------------
 	user {$newUserName:
 		ensure => present,
 		managehome => 'true',
-		password => $newUserPwd
+		password => $newUserPwd,
+		groups => 'admin'
 	}
 
 #---------------------------------------------------------------------
@@ -42,21 +61,9 @@ import 'config.pp'
 #---------------------------------------------------------------------
 # Add new user to sudoers
 #---------------------------------------------------------------------
-	sudo::conf { $newUserName:
-		content => '${newUserName} ALL=(ALL) ALL',
-	}
-
-#---------------------------------------------------------------------
-# More secure SSH config
-#---------------------------------------------------------------------
-	class { 'ssh::server':
-		storeconfigs_enabled => false,
-		options => {
-			'PasswordAuthentication' => 'no',
-			'PermitRootLogin'        => 'no',
-			'Port'                   => $sshPort,
-			'AllowUsers'			 => $newUserPwd
-		},
+	sudo::conf { 'admins':
+		ensure  => present,
+		content => '%admin ALL=(ALL) ALL',
 	}
 
 #---------------------------------------------------------------------
@@ -68,15 +75,15 @@ import 'config.pp'
 
 	include ufw
 
-	ufw::allow { "allow-http-from-all":
-		port => 80,
-		proto => "tcp"
-	}
-
-	ufw::allow { "allow-https-from-all":
-		port => 443,
-		proto => "tcp"
-	}
+#	ufw::allow { "allow-http-from-all":
+#		port => 80,
+#		proto => "tcp"
+#	}
+#
+#	ufw::allow { "allow-https-from-all":
+#		port => 443,
+#		proto => "tcp"
+#	}
 
 	ufw::logging { "activate-logging":
 	    level => 'on',
@@ -210,13 +217,13 @@ import 'config.pp'
 #---------------------------------------------------------------------
 # Install and configure Tripwire to monitor changes to system/critical files
 #---------------------------------------------------------------------
-	include tripwire
-
-	tripwire::config { 'default':
-	  localpassphrase => $twLocalPassphrase,
-	  sitepassphrase  => $twSitePassphrase,
-	  globalemail     => $reportEmail
-	}
+#	include tripwire
+#
+#	tripwire::config { 'default':
+#	  localpassphrase => $twLocalPassphrase,
+#	  sitepassphrase  => $twSitePassphrase,
+#	  globalemail     => $reportEmail
+#	}
 
 #---------------------------------------------------------------------
 # Install and enable port knocking
