@@ -93,7 +93,6 @@ if [ "$LINODE_ID" == '' ]; then
 	while [[ $REPORT_PWD = "" ]]; do
 		read -e -p "Enter a password to encrypt report: " -i "" REPORT_PWD
 	done
-	read -e -p "Enter root password: " -i "" ROOT_PWD
 	while [[ $USER_NAME = "" ]]; do
 		read -e -p "Enter new (non-root) user name: " -i "" USER_NAME
 	done
@@ -103,8 +102,6 @@ if [ "$LINODE_ID" == '' ]; then
 		read -e -p "Enter an SSH key passphrase: " -i "" SSH_KEY_PASSPHRASE
 	fi
 	read -e -p "Enter an SSH port: " -i "22" SSH_PORT
-	read -e -p "Enter a Tripwire local passphrase: " -i "" TW_LOCAL_PASSPHRASE
-	read -e -p "Enter a Tripwire site passphrase: " -i "" TW_SITE_PASSPHRASE
 	read -e -p "Enter a Knockd sequence open: " -i "" KNOCKD_SEQ_OPEN
 	read -e -p "Enter a Knockd sequence close: " -i "" KNOCKD_SEQ_CLOSE
 
@@ -117,11 +114,6 @@ printTitleLeft "Generating non provided params..."
 #---------------------------------------------------------------------
 # Generate values for parameters not defined
 #---------------------------------------------------------------------
-if [ "$ROOT_PWD" == '' ]; then
-	printTextLeft "No root password provided, generating..."
-	ROOT_PWD=$(genpasswd 50)
-fi
-
 if [ "$USER_PWD" == '' ]; then
 	printTextLeft "No user password provided, generating..."
 	USER_PWD=$(genpasswd 50)
@@ -145,16 +137,6 @@ if [ "$SSH_PORT" == '' ]; then
 	SSH_PORT="$(shuf -i 2000-9999 -n 1)"
 fi
 
-if [ "$TW_LOCAL_PASSPHRASE" == '' ]; then
-	printTextLeft "No Tripwire local passphrase provided, generating..."
-	TW_LOCAL_PASSPHRASE=$(genpasswd 50)
-fi
-
-if [ "$TW_SITE_PASSPHRASE" == '' ]; then
-	printTextLeft "No Tripwire site passphrase provided, generating..."
-	TW_SITE_PASSPHRASE=$(genpasswd 50)
-fi
-
 if [ "$KNOCKD_SEQ_OPEN" == '' ]; then
 	printTextLeft "No Knockd sequence open provided, generating..."
 	KNOCKD_SEQ_OPEN="$(shuf -i 2000-9999 -n 1):udp,$(shuf -i 2000-9999 -n 1):tcp,$(shuf -i 2000-9999 -n 1):udp"
@@ -175,7 +157,7 @@ printTitleLeft "Generating configuration report..."
 
 printTitle "Configuration report" > ~/deploy-config.log
 
-CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "ROOT_PWD" "USER_NAME" "USER_PWD" "TW_LOCAL_PASSPHRASE" "TW_SITE_PASSPHRASE" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
+CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "USER_NAME" "USER_PWD" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
 
 for i in "${CONF_VALUES[@]}"; do
 	printConfValueLine "$i" "${!i}" >> ~/deploy-config.log
@@ -205,7 +187,6 @@ printTitleLeft "Installing needed packages for deployment..."
 apt-get update -qq >> ~/deploy-details.log
 apt-get upgrade -q -y >> /dev/null
 apt-get install -q -y build-essential make ruby-dev git puppet makepasswd >> ~/deploy-details.log
-#gem install -q librarian-puppet >> ~/deploy-details.log
 gem list r10k -i 1>/dev/null || gem install --quiet --no-rdoc --no-ri r10k >> ~/deploy-details.log
 
 printEmptyLine
@@ -216,7 +197,6 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Hashing passwords..."
 
-ROOT_PWD_HASHED=$(makepasswd -m sha-512 $ROOT_PWD | tr -d '\n')
 USER_PWD_HASHED=$(makepasswd -m sha-512 $USER_PWD | tr -d '\n')
 
 printTextLeft "All done !"
@@ -229,31 +209,6 @@ printTitleLeft "Creating Puppet config folder..."
 if [ ! -d "/etc/puppet" ]; then
 	mkdir /etc/puppet
 fi
-if [ ! -d "/etc/puppet/hardening" ]; then
-	mkdir /etc/puppet/hardening
-fi
-if [ ! -d "/etc/puppet/srvConfig" ]; then
-	mkdir /etc/puppet/srvConfig
-fi
-
-printTextLeft "All done !"
-
-#---------------------------------------------------------------------
-# Download Hardening Framework
-#---------------------------------------------------------------------
-printTitleLeft "Downloading Hardening Framework..."
-
-mkdir /tmp/puppet-conf-hf
-cd /tmp/puppet-conf-hf
-wget -q https://github.com/TelekomLabs/example-puppet-hardening/tarball/master -O hardening.tar.gz >> ~/deploy-details.log
-tar -zxf hardening.tar.gz --strip-components=1 >> ~/deploy-details.log
-rm -f hardening.tar.gz
-cp -r * /etc/puppet/hardening
-
-cd /etc/puppet/hardening
-r10k -v info puppetfile install
-
-rm -rf /tmp/puppet-conf-hf
 
 printTextLeft "All done !"
 
@@ -266,42 +221,30 @@ mkdir /tmp/puppet-conf
 cd /tmp/puppet-conf
 wget -q https://github.com/leeroybrun/puppet-server-config/tarball/master -O puppet.tar.gz >> ~/deploy-details.log
 tar -zxf puppet.tar.gz --strip-components=1 >> ~/deploy-details.log
-cp -r puppet/* /etc/puppet/srvConfig
+cp -r puppet/* /etc/puppet
 
-cd /etc/puppet/srvConfig
+cd /etc/puppet
 
-cp /etc/puppet/srvConfig/manifests/config.example.pp /etc/puppet/srvConfig/manifests/config.pp
+cp /etc/puppet/manifests/config.example.pp /etc/puppet/manifests/config.pp
 
 rm -rf /tmp/puppet-conf
 
 printTextLeft "All done !"
 
 #---------------------------------------------------------------------
-# Install Puppet modules dependencies
-#---------------------------------------------------------------------
-#printTitleLeft "Install Puppet modules dependencies..."
-
-#librarian-puppet install
-
-#printTextLeft "All done !"
-
-#---------------------------------------------------------------------
 # Replace values in config.pp with variables content
 #---------------------------------------------------------------------
 printTitleLeft "Replace values in Puppet config manifest..."
 
-sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/ROOT_PWD_HASHED/$(echo $ROOT_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/USER_PWD_HASHED/$(echo $USER_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/SSH_KEY_COMMENT/$(echo $SSH_KEY_COMMENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/SSH_KEY_TYPE/$(echo $SSH_KEY_TYPE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/SSH_KEY_CONTENT/$(echo $SSH_KEY_CONTENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/SSH_PORT/$(echo $SSH_PORT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/TW_LOCAL_PASSPHRASE/$(echo $TW_LOCAL_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/TW_SITE_PASSPHRASE/$(echo $TW_SITE_PASSPHRASE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/KNOCKD_SEQ_OPEN/$(echo $KNOCKD_SEQ_OPEN | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
-sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/srvConfig/manifests/config.pp
+sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/USER_PWD_HASHED/$(echo $USER_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_KEY_COMMENT/$(echo $SSH_KEY_COMMENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_KEY_TYPE/$(echo $SSH_KEY_TYPE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_KEY_CONTENT/$(echo $SSH_KEY_CONTENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/SSH_PORT/$(echo $SSH_PORT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/KNOCKD_SEQ_OPEN/$(echo $KNOCKD_SEQ_OPEN | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/KNOCKD_SEQ_CLOSE/$(echo $KNOCKD_SEQ_CLOSE | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 
 printTextLeft "All done !"
 
@@ -310,7 +253,7 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Applying Puppet manifest..."
 
-cd /etc/puppet/srvConfig
+cd /etc/puppet
 r10k -v info puppetfile install
 
 printEmptyLine
@@ -336,12 +279,12 @@ fi
 # TODO: send deploy-details too
 # http://www.cyberciti.biz/tips/linux-how-to-encrypt-and-decrypt-files-with-a-password.html
 if [ $MUTT_INSTALLED == 0 ]; then
-	cat /etc/puppet/srvConfig/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
+	cat /etc/puppet/manifests/config.pp | mail -s "Puppet config for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy.log | mail -s "Deploying report $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy-conf.log | mail -s "Deploying report conf for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 	cat ~/deploy-details.log | mail -s "Deploying report details for $IP_ADDR - $FQDN_HOSTNAME" "$REPORT_EMAIL"
 else
-	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a "/etc/puppet/srvConfig/manifests/config.pp" -a "~/deploy.log" -a "~/deploy-details.log" -a "~/deploy-config.log" -- "$REPORT_EMAIL"
+	echo "You will find all the details attached to this message." | mutt -s "Deploying report for $IP_ADDR - $FQDN_HOSTNAME" -a "/etc/puppet/manifests/config.pp" -a "~/deploy.log" -a "~/deploy-details.log" -a "~/deploy-config.log" -- "$REPORT_EMAIL"
 fi
 
 printTextLeft "All done !"
@@ -362,7 +305,7 @@ printTextLeft "All done !"
 #---------------------------------------------------------------------
 printTitleLeft "Removing Puppet config from filesystem"
 
-rm -f /etc/puppet/srvConfig/manifests/config.pp
+rm -f /etc/puppet/manifests/config.pp
 
 printTextLeft "All done !"
 
