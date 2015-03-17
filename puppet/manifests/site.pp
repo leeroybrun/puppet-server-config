@@ -114,21 +114,28 @@ import 'config.pp'
 	}
 
 #---------------------------------------------------------------------
-# Install and configure Exim4
+# Install and configure postfix
 #---------------------------------------------------------------------
-	include exim4
-	exim4::config { 'exim4-default':
-	    configtype => 'internet',
-	    local_interfaces => '127.0.0.1; ::1',
-	    readhost => '',
-	    relay_domains => '',
-	    minimaldns => 'false',
-	    relay_nets => '',
-	    smarthost => '',
-	    use_split_config => 'false',
-	    hide_mailname => '',
-	    mailname_in_oh => 'true',
-	    localdelivery => 'maildir_home'
+	class { '::postfix::server':
+		myhostname => $mailHostName,
+		mailbox_size_limit => 0,
+		recipient_delimiter => "+",
+		inet_interfaces => "localhost",
+		mynetworks => "127.0.0.0/8, [::1]/128",
+		mydestination => "${$mailHostName}, localhost"
+		mynetworks_style => "host"
+	}
+	
+	mailalias { 'root':
+		ensure    => present,
+		recipient => $reportEmail,
+		provider  => augeas,
+	}
+	
+	mailalias { $newUserName:
+		ensure    => present,
+		recipient => $reportEmail,
+		provider  => augeas,
 	}
 
 
