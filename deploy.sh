@@ -92,6 +92,9 @@ if [ "$LINODE_ID" == '' ]; then
 	while [[ $REPORT_EMAIL = "" ]]; do
 		read -e -p "Enter a report email: " -i "root@localhost" REPORT_EMAIL
 	done
+	while [[ $MAIL_HOSTNAME = "" ]]; do
+		read -e -p "Enter a mail hostname: " -i "mydomain.com" MAIL_HOSTNAME
+	done
 	while [[ $REPORT_PWD = "" ]]; do
 		read -e -p "Enter a password to encrypt report: " -i "" REPORT_PWD
 	done
@@ -159,7 +162,7 @@ printTitleLeft "Generating configuration report..."
 
 printTitle "Configuration report" > "$LOG_DIR/deploy-config.log"
 
-CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "REPORT_PWD" "USER_NAME" "USER_PWD" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
+CONF_VALUES=( "IP_ADDR" "FQDN_HOSTNAME" "SSH_PORT" "REPORT_EMAIL" "MAIL_HOSTNAME" "REPORT_PWD" "USER_NAME" "USER_PWD" "KNOCKD_SEQ_OPEN" "KNOCKD_SEQ_CLOSE" )
 
 for i in "${CONF_VALUES[@]}"; do
 	printConfValueLine "$i" "${!i}" >> "$LOG_DIR/deploy-config.log"
@@ -239,6 +242,7 @@ printTextLeft "All done !"
 printTitleLeft "Replace values in Puppet config manifest..."
 
 sed -i.bak "s/REPORT_EMAIL/$(echo $REPORT_EMAIL | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
+sed -i.bak "s/MAIL_HOSTNAME/$(echo $MAIL_HOSTNAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/USER_NAME/$(echo $USER_NAME | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/USER_PWD_HASHED/$(echo $USER_PWD_HASHED | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
 sed -i.bak "s/SSH_KEY_COMMENT/$(echo $SSH_KEY_COMMENT | sed -e 's/[\/&]/\\&/g')/g" /etc/puppet/manifests/config.pp
