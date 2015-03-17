@@ -14,3 +14,9 @@ mod 'leeroybru/tripwire',
 mod 'leeroybrun/exim4',
   :git => "https://github.com/leeroybrun/puppet-exim4.git"
 mod 'juasiepo/knockd'
+
+mod 'puppetlabs/stdlib', :latest
+mod 'thias/sysctl', :latest
+mod 'saz/ssh', :latest
+mod 'hardening/os_hardening', :latest
+mod 'hardening/ssh_hardening', :latest
