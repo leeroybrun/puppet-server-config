@@ -2,6 +2,7 @@
 # Config
 #---------------------------------------------------------------------
 $reportEmail 		 = 'REPORT_EMAIL'			# Ex: email@domain.com
+$mailHostName 	 = 'MAIL_HOSTNAME'		# Ex: domain.com
 
 $newUserName 		 = 'USER_NAME'				# Ex: myUserName
 $newUserPwd  		 = 'USER_PWD_HASHED'
